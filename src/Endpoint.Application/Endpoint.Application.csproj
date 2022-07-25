@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <EnablePreviewFeatures>True</EnablePreviewFeatures>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>GGroupp.Infra</RootNamespace>
+    <AssemblyName>GGroupp.Infra.Endpoint.Application</AssemblyName>
+    <Version>1.0.0-build.9</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GGroupp.Infra.Endpoint.Func" Version="1.0.0-build.11" />
+    <PackageReference Include="GGroupp.Infra.Swagger.Core" Version="1.0.0" />
+    <PackageReference Include="GGroupp.Infra.Swagger.Option" Version="1.0.0" />
+    <PackageReference Include="PrimeFuncPack.Dependency.Core" Version="2.0.2" />
+  </ItemGroup>
+
+</Project>
