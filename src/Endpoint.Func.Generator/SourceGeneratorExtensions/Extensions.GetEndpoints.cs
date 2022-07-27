@@ -62,6 +62,7 @@ internal static partial class SourceGeneratorExtensions
             Namespace = typeSymbol.ContainingNamespace.ToString(),
             TypeRootName = typeRootName,
             TypeFuncName = typeSymbol.Name,
+            MethodFuncName = endpointMethod.Name,
             Method = GetMethodValue(endpointAttributeData.ConstructorArguments[0].Value),
             Route = endpointAttributeData.ConstructorArguments[1].Value?.ToString(),
             Summary = endpointAttributeData.GetAttributePropertyValue("Summary")?.ToString(),

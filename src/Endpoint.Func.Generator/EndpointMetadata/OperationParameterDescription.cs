@@ -5,9 +5,9 @@ internal sealed record class OperationParameterDescription
     public OperationParameterDescription(bool required, string location, string name, string schemaFunction)
     {
         Required = required;
-        Location = location;
-        Name = name;
-        SchemaFunction = schemaFunction;
+        Location = location ?? string.Empty;
+        Name = name ?? string.Empty;
+        SchemaFunction = schemaFunction ?? string.Empty;
     }
 
     public bool Required { get; }

@@ -9,7 +9,7 @@ public readonly record struct EndpointProblem
     public EndpointProblem(
         [AllowNull] string type,
         [AllowNull] string title = AboutBlankTitle,
-        FailureStatusCode status = FailureStatusCode.BadRequest,
+        int status = 400,
         [AllowNull] string detail = null)
     {
         Type = string.IsNullOrEmpty(type) ? null : type;
@@ -22,7 +22,7 @@ public readonly record struct EndpointProblem
 
     public string? Title { get; }
 
-    public FailureStatusCode Status { get; }
+    public int Status { get; }
 
     public string? Detail { get; }
 }

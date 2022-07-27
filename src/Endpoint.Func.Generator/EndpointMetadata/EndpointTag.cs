@@ -4,7 +4,7 @@ internal sealed record class EndpointTag
 {
     public EndpointTag(string name, string? description)
     {
-        Name = name;
+        Name = name ?? string.Empty;
         Description = description;
     }
 

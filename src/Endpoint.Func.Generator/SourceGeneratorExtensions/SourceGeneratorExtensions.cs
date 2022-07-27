@@ -5,8 +5,6 @@ namespace GGroupp.Infra;
 
 internal static partial class SourceGeneratorExtensions
 {
-    private const string EndpointPrefixName = "Gen";
-
     private static string GetTypeRootName(this string endpointTypeName)
     {
         if (string.IsNullOrEmpty(endpointTypeName))
@@ -17,16 +15,11 @@ internal static partial class SourceGeneratorExtensions
         var httpFuncIndex = endpointTypeName.IndexOf("HttpFunc", StringComparison.InvariantCultureIgnoreCase);
         if (httpFuncIndex > 0)
         {
-            return EndpointPrefixName + endpointTypeName.Substring(0, httpFuncIndex);
+            return endpointTypeName.Substring(0, httpFuncIndex);
         }
 
         var funcIndex = endpointTypeName.IndexOf("Func", StringComparison.InvariantCultureIgnoreCase);
-        if (funcIndex > 0)
-        {
-            return EndpointPrefixName + endpointTypeName.Substring(0, funcIndex);
-        }
-
-        return EndpointPrefixName + endpointTypeName;
+        return funcIndex > 0 ? endpointTypeName.Substring(0, funcIndex) : endpointTypeName;
     }
 
     private static bool IsEndpointMethod(IMethodSymbol methodSymbol)
@@ -37,6 +30,11 @@ internal static partial class SourceGeneratorExtensions
         }
 
         if (methodSymbol.MethodKind is MethodKind.PropertyGet or MethodKind.PropertySet)
+        {
+            return false;
+        }
+
+        if (methodSymbol.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal))
         {
             return false;
         }

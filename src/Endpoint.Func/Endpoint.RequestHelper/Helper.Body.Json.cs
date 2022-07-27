@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,17 +8,17 @@ namespace GGroupp.Infra.Endpoint;
 
 partial class EndpointRequestHelper
 {
-    public static async ValueTask<Result<T?, Failure<Unit>>> DeserializeBodyAsync<T>(
-        [AllowNull] this EndpointRequest request, JsonSerializerOptions? jsonSerializerOptions, ILogger? logger, CancellationToken cancellationToken)
+    public static async ValueTask<Result<T, Failure<Unit>>> DeserializeBodyAsync<T>(
+        this EndpointRequest? request, JsonSerializerOptions? jsonSerializerOptions, ILogger? logger, CancellationToken cancellationToken)
     {
         if (request?.Body is null)
         {
-            return default(T);
+            return default(T)!;
         }
 
         try
         {
-            return await JsonSerializer.DeserializeAsync<T>(request.Body, jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
+            return (await JsonSerializer.DeserializeAsync<T>(request.Body, jsonSerializerOptions, cancellationToken).ConfigureAwait(false))!;
         }
         catch (Exception exception)
         {

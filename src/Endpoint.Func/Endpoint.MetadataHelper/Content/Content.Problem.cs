@@ -9,7 +9,7 @@ partial class EndpointMetadataHelper
         =>
         new Dictionary<string, OpenApiMediaType>
         {
-            [EndpointContentType.ProblemJson] = new()
+            [ProblemJsonContentType] = new()
             {
                 Schema = CreateReferenceSchema(false, "ProblemDetails")
             }

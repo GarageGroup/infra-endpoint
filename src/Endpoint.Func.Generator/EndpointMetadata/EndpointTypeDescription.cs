@@ -13,6 +13,8 @@ internal sealed record class EndpointTypeDescription
 
     public string? TypeFuncName { get; set; }
 
+    public string? MethodFuncName { get; set; }
+
     public string? Method { get; set; }
 
     public string? Route { get; set; }

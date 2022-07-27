@@ -9,11 +9,11 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GGroupp.Infra</RootNamespace>
     <AssemblyName>GGroupp.Infra.Endpoint.Application</AssemblyName>
-    <Version>1.0.0-build.9</Version>
+    <Version>1.0.0-build.11</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GGroupp.Infra.Endpoint.Func" Version="1.0.0-build.11" />
+    <PackageReference Include="GGroupp.Infra.Endpoint.Func" Version="1.0.0-build.21" />
     <PackageReference Include="GGroupp.Infra.Swagger.Core" Version="1.0.0" />
     <PackageReference Include="GGroupp.Infra.Swagger.Option" Version="1.0.0" />
     <PackageReference Include="PrimeFuncPack.Dependency.Core" Version="2.0.2" />

@@ -39,8 +39,7 @@ internal sealed class ApplicationSwaggerSourceGenerator : ISourceGenerator
         _ = namespaces.Remove(@namespace);
         var finalNamespaces = namespaces.Distinct().OrderBy(GetNamespaceOrder).ToArray();
 
-        var startLine = $"// Auto-generated code at {DateTime.Now:dd.MM.yyyy HH:mm:ss}";
-        var codeBuilder = new StringBuilder(startLine).AppendLine().Append("#nullable enable");
+        var codeBuilder = new StringBuilder("// Auto-generated code").AppendLine().Append("#nullable enable");
         codeBuilder = codeBuilder.AppendUsings(finalNamespaces).AppendNamespace(context.GetNamespace()).AppendLine();
 
         var endpointsCode = endpointTypeNames.Distinct().ToArray().BuildEndpointsCode("        ");

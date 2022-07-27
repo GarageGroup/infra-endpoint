@@ -7,7 +7,7 @@ partial class EndpointResponseHelper
     public static EndpointResponse ToFailureResponse(this EndpointProblem problem, JsonSerializerOptions? jsonSerializerOptions)
         =>
         new(
-            statusCode: (int)problem.Status,
+            statusCode: problem.Status,
             headers: problemJsonHeaders,
-            body: problem.SerializeToStream(jsonSerializerOptions));
+            body: problem.ToJsonStream(jsonSerializerOptions));
 }

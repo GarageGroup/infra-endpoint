@@ -5,11 +5,7 @@ namespace GGroupp.Infra;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Field)]
 public sealed class SuccessAttribute : Attribute
 {
-    public SuccessAttribute()
-        =>
-        StatusCode = SuccessStatusCode.Ok;
-
-    public SuccessAttribute(SuccessStatusCode statusCode)
+    public SuccessAttribute(SuccessStatusCode statusCode = SuccessStatusCode.Ok)
         =>
         StatusCode = statusCode;
 

@@ -8,7 +8,7 @@ partial class SourceBuilder
 {
     public string Build()
     {
-        var builder = new StringBuilder($"// Auto-generated code at {DateTime.Now:dd.MM.yyyy HH:mm:ss}");
+        var builder = new StringBuilder("// Auto-generated code");
         builder = builder.AppendLine().Append("#nullable enable").AppendLine();
 
         foreach (var @using in usings.OrderBy(GetNamespaceOrder))

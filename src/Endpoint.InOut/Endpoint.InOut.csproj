@@ -9,7 +9,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GGroupp.Infra</RootNamespace>
     <AssemblyName>GGroupp.Infra.Endpoint.InOut</AssemblyName>
-    <Version>1.0.0-build.8</Version>
+    <Version>1.0.0-build.11</Version>
   </PropertyGroup>
 
 </Project>
