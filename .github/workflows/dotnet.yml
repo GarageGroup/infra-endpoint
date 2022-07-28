@@ -1,0 +1,111 @@
+name: .NET
+
+on:
+  push:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+        include-prerelease: false
+
+     # Add NuGet Sources
+
+    - name: Create Local NuGet Directory
+      run: mkdir ~/nuget
+
+    - name: Add Local Nuget Source
+      run: dotnet nuget add source ~/nuget
+
+    - name: Add GGroupp NuGet Source
+      run: dotnet nuget add source ${{ secrets.GGROUPP_NUGET_SOURCE_URL }} -n ggroupp -u ${{ secrets.GGROUPP_NUGET_SOURCE_USER_NAME }} -p ${{ secrets.GGROUPP_NUGET_SOURCE_USER_PASSWORD }} --store-password-in-clear-text
+
+    # CodeAnalysis.SourceBuilder
+
+    - name: Restore CodeAnalysis.SourceBuilder
+      run: dotnet restore ./src/*/CodeAnalysis.SourceBuilder.csproj
+
+    - name: Build CodeAnalysis.SourceBuilder
+      run: dotnet build ./src/*/CodeAnalysis.SourceBuilder.csproj --no-restore  -c Release
+
+    - name: Pack CodeAnalysis.SourceBuilder
+      run: dotnet pack ./src/*/CodeAnalysis.SourceBuilder.csproj --no-restore -o ~/nuget  -c Release
+
+    # Endpoint.Annotation
+
+    - name: Restore Endpoint.Annotation
+      run: dotnet restore ./src/*/Endpoint.Annotation.csproj
+
+    - name: Build Endpoint.Annotation
+      run: dotnet build ./src/*/Endpoint.Annotation.csproj --no-restore  -c Release
+
+    - name: Pack Endpoint.Annotation
+      run: dotnet pack ./src/*/Endpoint.Annotation.csproj --no-restore -o ~/nuget  -c Release
+
+    # Endpoint.Core
+
+    - name: Restore Endpoint.Core
+      run: dotnet restore ./src/*/Endpoint.Core.csproj
+
+    - name: Build Endpoint.Core
+      run: dotnet build ./src/*/Endpoint.Core.csproj --no-restore  -c Release
+
+    - name: Pack Endpoint.Core
+      run: dotnet pack ./src/*/Endpoint.Core.csproj --no-restore -o ~/nuget  -c Release
+
+    # Endpoint.Generator
+
+    - name: Restore Endpoint.Generator
+      run: dotnet restore ./src/*/Endpoint.Generator.csproj
+
+    - name: Build Endpoint.Generator
+      run: dotnet build ./src/*/Endpoint.Generator.csproj --no-restore  -c Release
+
+    - name: Pack Endpoint.Generator
+      run: dotnet pack ./src/*/Endpoint.Generator.csproj --no-restore -o ~/nuget  -c Release
+
+    # Endpoint.AspNetCore
+
+    - name: Restore Endpoint.AspNetCore
+      run: dotnet restore ./src/*/Endpoint.AspNetCore.csproj
+
+    - name: Build Endpoint.AspNetCore
+      run: dotnet build ./src/*/Endpoint.AspNetCore.csproj --no-restore  -c Release
+
+    - name: Pack Endpoint.AspNetCore
+      run: dotnet pack ./src/*/Endpoint.AspNetCore.csproj --no-restore -o ~/nuget  -c Release
+
+    # Endpoint.Swagger.Configurator
+
+    - name: Restore Endpoint.Swagger.Configurator
+      run: dotnet restore ./src/*/Endpoint.Swagger.Configurator.csproj
+
+    - name: Build Endpoint.Swagger.Configurator
+      run: dotnet build ./src/*/Endpoint.Swagger.Configurator.csproj --no-restore  -c Release
+
+    - name: Pack Endpoint.Swagger.Configurator
+      run: dotnet pack ./src/*/Endpoint.Swagger.Configurator.csproj --no-restore -o ~/nuget  -c Release
+
+    # Endpoint.Swagger.Generator
+
+    - name: Restore Endpoint.Swagger.Generator
+      run: dotnet restore ./src/*/Endpoint.Swagger.Generator.csproj
+
+    - name: Build Endpoint.Swagger.Generator
+      run: dotnet build ./src/*/Endpoint.Swagger.Generator.csproj --no-restore  -c Release
+
+    - name: Pack Endpoint.Swagger.Generator
+      run: dotnet pack ./src/*/Endpoint.Swagger.Generator.csproj --no-restore -o ~/nuget  -c Release
+
+    # Push
+
+    - name: Push Packages
+      if: ${{ github.ref == 'refs/heads/main' }}
+      run: dotnet nuget push "../../../nuget/*.nupkg" -s ${{ secrets.GGROUPP_NUGET_SOURCE_URL }} -k ${{ secrets.GGROUPP_NUGET_SOURCE_USER_PASSWORD }} --skip-duplicate
