@@ -10,5 +10,5 @@ partial class EndpointParser
 
     public static Result<DateOnly, Failure<Unit>> ParseDateOnly(string? source)
         =>
-        DateOnly.TryParse(source, out var result) ? result : CreateFailure(source, "DateOnly");
+        DateOnly.TryParse(source, InvariantFormatProvider, DefaultDateTimeStyle, out var result) ? result : CreateFailure(source, "DateOnly");
 }

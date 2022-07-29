@@ -15,6 +15,12 @@ partial class EndpointDeserializer
         document.GetNullableValue(property, GetDecimalOrFailure);
 
     private static Result<decimal, Failure<Unit>> GetDecimalOrFailure(JsonElement jsonElement, string propertyName)
-        =>
-        jsonElement.TryGetDecimal(out var value) ? value : CreateFailure(propertyName, nameof(Decimal));
+    {
+        if (jsonElement.ValueKind is not JsonValueKind.Number)
+        {
+            return CreateValueKindFailure(propertyName, JsonValueKind.Number);
+        }
+
+        return jsonElement.TryGetDecimal(out var value) ? value : CreateParserFailure(propertyName, nameof(Decimal));
+    }
 }

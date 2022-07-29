@@ -10,5 +10,5 @@ partial class EndpointParser
 
     public static Result<long, Failure<Unit>> ParseInt64(string? source)
         =>
-        long.TryParse(source, out var result) ? result : CreateFailure(source, "Int64");
+        long.TryParse(source, IntegerNumberStyle, InvariantFormatProvider, out var result) ? result : CreateFailure(source, "Int64");
 }

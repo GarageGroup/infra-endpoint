@@ -15,6 +15,12 @@ partial class EndpointDeserializer
         document.GetNullableValue(property, GetByteOrFailure);
 
     private static Result<byte, Failure<Unit>> GetByteOrFailure(JsonElement jsonElement, string propertyName)
-        =>
-        jsonElement.TryGetByte(out var value) ? value : CreateFailure(propertyName, nameof(Byte));
+    {
+        if (jsonElement.ValueKind is not JsonValueKind.Number)
+        {
+            return CreateValueKindFailure(propertyName, JsonValueKind.Number);
+        }
+
+        return jsonElement.TryGetByte(out var value) ? value : CreateParserFailure(propertyName, nameof(Byte));
+    }
 }

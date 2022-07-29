@@ -8,7 +8,7 @@ internal static partial class CodeAnalysisExtensions
     {
         if (string.IsNullOrEmpty(source))
         {
-            return source;
+            return string.Empty;
         }
 
         if (source.Length is 1)

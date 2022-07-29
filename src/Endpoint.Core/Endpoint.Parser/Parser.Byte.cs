@@ -10,5 +10,5 @@ partial class EndpointParser
 
     public static Result<byte, Failure<Unit>> ParseByte(string? source)
         =>
-        byte.TryParse(source, out var result) ? result : CreateFailure(source, "Byte");
+        byte.TryParse(source, IntegerNumberStyle, InvariantFormatProvider, out var result) ? result : CreateFailure(source, "Byte");
 }

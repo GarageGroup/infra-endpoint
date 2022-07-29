@@ -15,6 +15,12 @@ partial class EndpointDeserializer
         document.GetNullableValue(property, GetInt16OrFailure);
 
     private static Result<short, Failure<Unit>> GetInt16OrFailure(JsonElement jsonElement, string propertyName)
-        =>
-        jsonElement.TryGetInt16(out var value) ? value : CreateFailure(propertyName, nameof(Int16));
+    {
+        if (jsonElement.ValueKind is not JsonValueKind.Number)
+        {
+            return CreateValueKindFailure(propertyName, JsonValueKind.Number);
+        }
+
+        return jsonElement.TryGetInt16(out var value) ? value : CreateParserFailure(propertyName, nameof(Int16));
+    }
 }

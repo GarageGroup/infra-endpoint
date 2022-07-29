@@ -157,7 +157,7 @@ partial class EndpointBuilder
         var successStatusCodes = type.GetSuccessStatusCodes();
         if (successStatusCodes.Count is 0)
         {
-            successStatusCodes = new[] { DefaultSuccessStatusCodeValue };
+            successStatusCodes = new[] { type.GetDefaultStatusCode() };
         }
 
         var responseBodyType = type.GetResponseBodyType();

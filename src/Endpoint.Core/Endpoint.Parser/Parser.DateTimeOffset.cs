@@ -10,5 +10,7 @@ partial class EndpointParser
 
     public static Result<DateTimeOffset, Failure<Unit>> ParseDateTimeOffset(string? source)
         =>
-        DateTimeOffset.TryParse(source, out var result) ? result : CreateFailure(source, "DateTimeOffset");
+        DateTimeOffset.TryParse(source, InvariantFormatProvider, DefaultDateTimeStyle, out var result)
+            ? result
+            : CreateFailure(source, "DateTimeOffset");
 }

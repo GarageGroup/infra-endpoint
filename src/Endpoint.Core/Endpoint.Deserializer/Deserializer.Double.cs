@@ -15,6 +15,12 @@ partial class EndpointDeserializer
         document.GetNullableValue(property, GetDoubleOrFailure);
 
     private static Result<double, Failure<Unit>> GetDoubleOrFailure(JsonElement jsonElement, string propertyName)
-        =>
-        jsonElement.TryGetDouble(out var value) ? value : CreateFailure(propertyName, nameof(Double));
+    {
+        if (jsonElement.ValueKind is not JsonValueKind.Number)
+        {
+            return CreateValueKindFailure(propertyName, JsonValueKind.Number);
+        }
+
+        return jsonElement.TryGetDouble(out var value) ? value : CreateParserFailure(propertyName, nameof(Double));
+    }
 }

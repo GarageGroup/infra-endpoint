@@ -15,6 +15,12 @@ partial class EndpointDeserializer
         document.GetNullableValue(property, GetGuidOrFailure);
 
     private static Result<Guid, Failure<Unit>> GetGuidOrFailure(JsonElement jsonElement, string propertyName)
-        =>
-        jsonElement.TryGetGuid(out var value) ? value : CreateFailure(propertyName, nameof(Guid));
+    {
+        if (jsonElement.ValueKind is not JsonValueKind.String)
+        {
+            return CreateValueKindFailure(propertyName, JsonValueKind.String);
+        }
+
+        return jsonElement.TryGetGuid(out var value) ? value : CreateParserFailure(propertyName, nameof(Guid));
+    }
 }

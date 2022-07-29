@@ -10,5 +10,5 @@ partial class EndpointParser
 
     public static Result<float, Failure<Unit>> ParseSingle(string? source)
         =>
-        float.TryParse(source, out var result) ? result : CreateFailure(source, "Single");
+        float.TryParse(source, FloatNumberStyle, InvariantFormatProvider, out var result) ? result : CreateFailure(source, "Single");
 }

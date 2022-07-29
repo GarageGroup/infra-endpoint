@@ -10,5 +10,5 @@ partial class EndpointParser
 
     public static Result<int, Failure<Unit>> ParseInt32(string? source)
         =>
-        int.TryParse(source, out var result) ? result : CreateFailure(source, "Int32");
+        int.TryParse(source, IntegerNumberStyle, InvariantFormatProvider, out var result) ? result : CreateFailure(source, "Int32");
 }
