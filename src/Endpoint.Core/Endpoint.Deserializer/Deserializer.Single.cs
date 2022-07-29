@@ -15,6 +15,12 @@ partial class EndpointDeserializer
         document.GetNullableValue(property, GetSingleOrFailure);
 
     private static Result<float, Failure<Unit>> GetSingleOrFailure(JsonElement jsonElement, string propertyName)
-        =>
-        jsonElement.TryGetSingle(out var value) ? value : CreateFailure(propertyName, nameof(Single));
+    {
+        if (jsonElement.ValueKind is not JsonValueKind.Number)
+        {
+            return CreateValueKindFailure(propertyName, JsonValueKind.Number);
+        }
+
+        return jsonElement.TryGetSingle(out var value) ? value : CreateParserFailure(propertyName, nameof(Single));
+    }
 }

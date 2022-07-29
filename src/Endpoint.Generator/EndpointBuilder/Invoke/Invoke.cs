@@ -81,11 +81,9 @@ partial class EndpointBuilder
 
     private static SourceBuilder AppendMapRequestFunction(this SourceBuilder sourceBuilder, EndpointTypeDescription type)
     {
-        var requestBody = type.GetRequestBodyType();
         var inTypeName = type.GetRequestTypeName();
-        var requestJsonProperties = type.GetRequestJsonBodyProperties();
 
-        if (requestBody is null && requestJsonProperties.Count is not > 0)
+        if (type.HasRequestBody() is false)
         {
             sourceBuilder.AppendCodeLine(
                 $"private static Result<{inTypeName}, Failure<Unit>> MapRequest(EndpointRequest request)");
@@ -104,6 +102,9 @@ partial class EndpointBuilder
 
         sourceBuilder.BeginCodeBlock();
         var resultParameters = new List<string>();
+
+        var requestBody = type.GetRequestBodyType();
+        var requestJsonProperties = type.GetRequestJsonBodyProperties();
 
         var useJsonDocument = false;
 
@@ -194,7 +195,7 @@ partial class EndpointBuilder
 
         static bool IsBodyAttribute(AttributeData attributeData)
             =>
-            EndpointAttributeHelper.IsFullBodyInAttribute(attributeData) || EndpointAttributeHelper.IsJsonBodyInAttribute(attributeData);
+            EndpointAttributeHelper.IsRootBodyInAttribute(attributeData) || EndpointAttributeHelper.IsJsonBodyInAttribute(attributeData);
 
         static bool IsJsonPropertyMatched(JsonBodyPropertyDescription jsonBodyProperty, IParameterSymbol parameter)
             =>
@@ -270,7 +271,7 @@ partial class EndpointBuilder
         else
         {
             var statusCodeName = type.GetSuccessStatusCodeValue();
-            var statusCodeValue = string.IsNullOrEmpty(statusCodeName) ? DefaultSuccessStatusCodeValue : statusCodeName;
+            var statusCodeValue = string.IsNullOrEmpty(statusCodeName) ? type.GetDefaultStatusCode() : statusCodeName;
 
             sourceBuilder.AppendCodeLine($"statusCode: {statusCodeValue},");
         }

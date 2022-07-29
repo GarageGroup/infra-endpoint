@@ -13,6 +13,12 @@ internal static partial class EndpointBuilder
 
     private const string DefaultSuccessStatusCodeValue = "200";
 
+    private const string NoContentStatusCodeValue = "204";
+
+    private static string GetDefaultStatusCode(this EndpointTypeDescription type)
+        =>
+        type.HasResponseBody() ? DefaultSuccessStatusCodeValue : NoContentStatusCodeValue;
+
     private static IMethodSymbol? GetConstructor(this ITypeSymbol typeSymbol)
     {
         var methods = typeSymbol.GetMembers().OfType<IMethodSymbol>();
@@ -28,10 +34,23 @@ internal static partial class EndpointBuilder
             methodSymbol.Parameters.Length;
     }
 
+    private static bool HasRequestBody(this EndpointTypeDescription type)
+    {
+        return type.RequestType?.GetConstructor()?.Parameters.Any(IsBodyInParameter) is true;
+
+        static bool IsBodyInParameter(IParameterSymbol parameterSymbol)
+            =>
+            parameterSymbol.GetAttributes().Any(IsBodyInAttribute);
+
+        static bool IsBodyInAttribute(AttributeData attributeData)
+            =>
+            IsJsonBodyInAttribute(attributeData) || IsRootBodyInAttribute(attributeData);
+    }
+
     private static BodyTypeDescription? GetRequestBodyType(this EndpointTypeDescription type)
     {
         var constructorParameters = type.RequestType?.GetConstructor()?.Parameters;
-        var bodyParameters = constructorParameters?.Where(IsFullBodyInParameter).ToArray();
+        var bodyParameters = constructorParameters?.Where(IsRootBodyInParameter).ToArray();
 
         if (bodyParameters?.Length is not > 0)
         {
@@ -43,16 +62,16 @@ internal static partial class EndpointBuilder
             throw new InvalidOperationException("There must be only one request body parameter");
         }
 
-        var attributeData = bodyParameters[0].GetAttributes().FirstOrDefault(IsFullBodyInAttribute);
+        var attributeData = bodyParameters[0].GetAttributes().FirstOrDefault(IsRootBodyInAttribute);
 
         return new(
             propertyName: bodyParameters[0].Name,
             contentType: attributeData?.GetAttributeValue(0)?.ToString(),
             bodyType: bodyParameters[0].Type);
 
-        static bool IsFullBodyInParameter(IParameterSymbol parameterSymbol)
+        static bool IsRootBodyInParameter(IParameterSymbol parameterSymbol)
             =>
-            parameterSymbol.GetAttributes().Any(IsFullBodyInAttribute);
+            parameterSymbol.GetAttributes().Any(IsRootBodyInAttribute);
 
         static bool IsJsonBodyInParameter(IParameterSymbol parameterSymbol)
             =>
@@ -89,6 +108,19 @@ internal static partial class EndpointBuilder
         }
     }
 
+    private static bool HasResponseBody(this EndpointTypeDescription type)
+    {
+        return type.ResponseType?.GetPublicReadableProperties().Any(IsBodyOutProperty) is true;
+
+        static bool IsBodyOutProperty(IPropertySymbol propertySymbol)
+            =>
+            propertySymbol.GetAttributes().Any(IsBodyOutAttribute);
+
+        static bool IsBodyOutAttribute(AttributeData attributeData)
+            =>
+            IsJsonBodyOutAttribute(attributeData) || IsRootBodyOutAttribute(attributeData);
+    }
+
     private static BodyTypeDescription? GetResponseBodyType(this EndpointTypeDescription type)
     {
         var properties = type.ResponseType?.GetPublicReadableProperties();
@@ -104,7 +136,7 @@ internal static partial class EndpointBuilder
             throw new InvalidOperationException("There must be only one response body parameter");
         }
 
-        var attributeData = bodyProperties[0].GetAttributes().FirstOrDefault(IsFullBodyOutAttribute);
+        var attributeData = bodyProperties[0].GetAttributes().FirstOrDefault(IsRootBodyOutAttribute);
 
         return new(
             propertyName: bodyProperties[0].Name,
@@ -113,7 +145,7 @@ internal static partial class EndpointBuilder
 
         static bool IsBodyOutProperty(IPropertySymbol propertySymbol)
             =>
-            propertySymbol.GetAttributes().Any(IsFullBodyOutAttribute);
+            propertySymbol.GetAttributes().Any(IsRootBodyOutAttribute);
 
         static bool IsJsonBodyOutProperty(IPropertySymbol propertySymbol)
             =>
@@ -144,7 +176,7 @@ internal static partial class EndpointBuilder
 
                 yield return new(
                     propertyName: property.Name,
-                    jsonPropertyName: string.IsNullOrEmpty(propertyName) ? property.Name : propertyName!,
+                    jsonPropertyName: string.IsNullOrEmpty(propertyName) ? property.GetJsonPropertyName() : propertyName!,
                     propertyType: property.Type);
             }
         }

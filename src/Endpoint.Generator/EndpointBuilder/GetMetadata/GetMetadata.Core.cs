@@ -11,7 +11,7 @@ partial class EndpointBuilder
 {
     private static OperationParameterDescription? GetOperationParameterDescription(IParameterSymbol parameterSymbol)
     {
-        if (parameterSymbol.GetAttributes().Any(IsFullBodyInAttribute))
+        if (parameterSymbol.GetAttributes().Any(IsRootBodyInAttribute))
         {
             return null;
         }

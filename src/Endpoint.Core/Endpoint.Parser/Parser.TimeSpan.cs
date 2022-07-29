@@ -10,5 +10,5 @@ partial class EndpointParser
 
     public static Result<TimeSpan, Failure<Unit>> ParseTimeSpan(string? source)
         =>
-        TimeSpan.TryParse(source, out var result) ? result : CreateFailure(source, "TimeSpan");
+        TimeSpan.TryParse(source, InvariantFormatProvider, out var result) ? result : CreateFailure(source, "TimeSpan");
 }

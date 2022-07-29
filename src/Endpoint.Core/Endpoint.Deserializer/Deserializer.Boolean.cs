@@ -20,6 +20,6 @@ partial class EndpointDeserializer
         {
             JsonValueKind.True => true,
             JsonValueKind.False => false,
-            _ => CreateFailure(propertyName, nameof(Boolean))
+            _ => CreateValueKindFailure(propertyName, JsonValueKind.True, JsonValueKind.False)
         };
 }

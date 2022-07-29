@@ -47,7 +47,22 @@ public static partial class EndpointDeserializer
         return jsonDocument.RootElement.TryGetProperty(propertyName, out var jsonElement) ? jsonElement : null;
     }
 
-    private static Failure<Unit> CreateFailure(string propertyName, string type)
+    private static Failure<Unit> CreateValueKindFailure(string propertyName, JsonValueKind valueKind, JsonValueKind? other = null)
+    {
+        var valueKindText = other switch
+        {
+            null => ToString(valueKind),
+            _ => $"either {ToString(valueKind)} or {ToString(other.Value)}"
+        };
+
+        return Failure.Create($"JSON property '{propertyName}' value kind must be {valueKindText}");
+
+        static string ToString(JsonValueKind valueKind)
+            =>
+            valueKind.ToString("G");
+    }
+
+    private static Failure<Unit> CreateParserFailure(string propertyName, string type)
         =>
         Failure.Create($"JSON Property '{propertyName}' was not deserialized as a {type} value");
 }

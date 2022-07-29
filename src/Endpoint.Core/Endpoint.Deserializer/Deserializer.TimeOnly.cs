@@ -15,6 +15,12 @@ partial class EndpointDeserializer
         document.GetNullableValue(property, GetTimeOnlyOrFailure);
 
     private static Result<TimeOnly, Failure<Unit>> GetTimeOnlyOrFailure(JsonElement jsonElement, string propertyName)
-        =>
-        jsonElement.TryGetDateTime(out var value) ? TimeOnly.FromDateTime(value) : CreateFailure(propertyName, nameof(TimeOnly));
+    {
+        if (jsonElement.ValueKind is not JsonValueKind.String)
+        {
+            return CreateValueKindFailure(propertyName, JsonValueKind.String);
+        }
+
+        return jsonElement.TryGetDateTime(out var value) ? TimeOnly.FromDateTime(value) : CreateParserFailure(propertyName, nameof(TimeOnly));
+    }
 }

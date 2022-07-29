@@ -10,5 +10,5 @@ partial class EndpointParser
 
     public static Result<short, Failure<Unit>> ParseInt16(string? source)
         =>
-        short.TryParse(source, out var result) ? result : CreateFailure(source, "Int16");
+        short.TryParse(source, IntegerNumberStyle, InvariantFormatProvider, out var result) ? result : CreateFailure(source, "Int16");
 }

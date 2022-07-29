@@ -23,11 +23,11 @@ partial class EndpointDeserializer
         {
             JsonValueKind.String => Parse(jsonElement.GetString()),
             JsonValueKind.Number => Parse(jsonElement.GetRawText()),
-            _ => CreateFailure(propertyName, typeof(TEnum).Name)
+            _ => CreateValueKindFailure(propertyName, JsonValueKind.String, JsonValueKind.Number)
         };
 
         Result<TEnum, Failure<Unit>> Parse(string? source)
             =>
-            Enum.TryParse<TEnum>(source, false, out var value) ? value : CreateFailure(propertyName, typeof(TEnum).Name);
+            Enum.TryParse<TEnum>(source, false, out var value) ? value : CreateParserFailure(propertyName, typeof(TEnum).Name);
     }
 }

@@ -10,5 +10,5 @@ partial class EndpointParser
 
     public static Result<decimal, Failure<Unit>> ParseDecimal(string? source)
         =>
-        decimal.TryParse(source, out var result) ? result : CreateFailure(source, "Decimal");
+        decimal.TryParse(source, DecimalNumberStyle, InvariantFormatProvider, out var result) ? result : CreateFailure(source, "Decimal");
 }

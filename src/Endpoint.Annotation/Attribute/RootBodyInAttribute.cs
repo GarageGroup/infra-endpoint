@@ -4,12 +4,12 @@ using System.Net.Mime;
 
 namespace GGroupp.Infra;
 
-[AttributeUsage(AttributeTargets.Property)]
-public sealed class FullBodyOutAttribute : Attribute
+[AttributeUsage(AttributeTargets.Parameter)]
+public sealed class RootBodyInAttribute : Attribute
 {
     private const string DefaultContentType = MediaTypeNames.Application.Json;
 
-    public FullBodyOutAttribute([AllowNull] string contentType = DefaultContentType)
+    public RootBodyInAttribute([AllowNull] string contentType = DefaultContentType)
         =>
         ContentType = string.IsNullOrEmpty(contentType) ? DefaultContentType : contentType;
 

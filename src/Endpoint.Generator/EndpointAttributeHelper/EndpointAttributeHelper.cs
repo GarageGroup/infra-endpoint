@@ -6,9 +6,9 @@ internal static partial class EndpointAttributeHelper
 {
     private const string AttributeNamespace = "GGroupp.Infra";
 
-    private const string FullBodyInAttribute = "FullBodyInAttribute";
+    private const string RootBodyInAttribute = "RootBodyInAttribute";
 
-    private const string FullBodyOutAttribute = "FullBodyOutAttribute";
+    private const string RootBodyOutAttribute = "RootBodyOutAttribute";
 
     private const string JsonBodyInAttribute = "JsonBodyInAttribute";
 
