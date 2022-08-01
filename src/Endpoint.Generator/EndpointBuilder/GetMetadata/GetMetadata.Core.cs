@@ -89,9 +89,9 @@ partial class EndpointBuilder
         return $"CreateArraySchema({isNullable.ToStringValue()}, CreateDefaultSchema({isNullable.ToStringValue()}))";
     }
 
-    private static string? GetSimpleSchemaFunction(this ITypeSymbol typeSymbol)
+    private static string? GetSimpleSchemaFunction(this ITypeSymbol typeSymbol, bool? nullable = null)
     {
-        var isNullable = typeSymbol.IsNullable();
+        var isNullable = nullable is not null ? nullable.Value : typeSymbol.IsNullable();
         var type = typeSymbol.GetNullableStructType() ?? typeSymbol;
 
         if (type.IsSystemType(nameof(String)))
@@ -147,6 +147,11 @@ partial class EndpointBuilder
         if (type.IsSystemType(nameof(Decimal)))
         {
             return $"CreateNumberSchema({isNullable.ToStringValue()})";
+        }
+
+        if (type.GetEnumUnderlyingType() is INamedTypeSymbol enumUnderlyingType)
+        {
+            return GetSimpleSchemaFunction(enumUnderlyingType, isNullable);
         }
 
         if (type.IsStreamType())
