@@ -383,16 +383,13 @@ partial class EndpointBuilder
             nullableStruct = true;
         }
 
-        var propertyValue = $"success.{jsonBodyProperty.PropertyName}";
-        if (nullableStruct)
-        {
-            propertyValue += ".Value";
-        }
+        var conditionValue = $"success.{jsonBodyProperty.PropertyName}";
+        var propertyValue = nullableStruct ? conditionValue + ".Value" : conditionValue;
 
         var hasNullCheck = nullableStruct || jsonBodyProperty.PropertyType.IsReferenceType;
         if (hasNullCheck)
         {
-            sourceBuilder.AppendCodeLine($"if ({propertyValue} is not null)").BeginCodeBlock();
+            sourceBuilder.AppendCodeLine($"if ({conditionValue} is not null)").BeginCodeBlock();
         }
 
         var jsonNameValue = jsonBodyProperty.JsonPropertyName.ToStringValueOrEmpty();
@@ -423,7 +420,12 @@ partial class EndpointBuilder
 
         if (hasNullCheck)
         {
-            sourceBuilder.EndCodeBlock();
+            sourceBuilder
+                .EndCodeBlock()
+                .AppendCodeLine("else")
+                .BeginCodeBlock()
+                .AppendCodeLine($"writer.WriteNull({jsonNameValue});")
+                .EndCodeBlock();
         }
 
         return sourceBuilder.AppendEmptyLine();
