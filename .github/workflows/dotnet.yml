@@ -82,28 +82,6 @@ jobs:
     - name: Pack Endpoint.AspNetCore
       run: dotnet pack ./src/*/Endpoint.AspNetCore.csproj --no-restore -o ~/nuget  -c Release
 
-    # Endpoint.Swagger.Configurator
-
-    - name: Restore Endpoint.Swagger.Configurator
-      run: dotnet restore ./src/*/Endpoint.Swagger.Configurator.csproj
-
-    - name: Build Endpoint.Swagger.Configurator
-      run: dotnet build ./src/*/Endpoint.Swagger.Configurator.csproj --no-restore  -c Release
-
-    - name: Pack Endpoint.Swagger.Configurator
-      run: dotnet pack ./src/*/Endpoint.Swagger.Configurator.csproj --no-restore -o ~/nuget  -c Release
-
-    # Endpoint.Swagger.Generator
-
-    - name: Restore Endpoint.Swagger.Generator
-      run: dotnet restore ./src/*/Endpoint.Swagger.Generator.csproj
-
-    - name: Build Endpoint.Swagger.Generator
-      run: dotnet build ./src/*/Endpoint.Swagger.Generator.csproj --no-restore  -c Release
-
-    - name: Pack Endpoint.Swagger.Generator
-      run: dotnet pack ./src/*/Endpoint.Swagger.Generator.csproj --no-restore -o ~/nuget  -c Release
-
     # Push
 
     - name: Push Packages

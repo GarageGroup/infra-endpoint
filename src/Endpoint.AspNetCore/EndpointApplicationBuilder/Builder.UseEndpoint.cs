@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using GGroupp.Infra;
 using GGroupp.Infra.Endpoint;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -26,7 +27,13 @@ partial class EndpointApplicationBuilder
 
         var route = new RouteBuilder(app).MapVerb(verb, template, InnerInvokeAsync).Build();
 
-        app.UseRouter(route);
+        _ = app.UseRouter(route);
+
+        if (app is ISwaggerBuilder swaggerBuilder)
+        {
+            _ = swaggerBuilder.Use(EndpointSwaggerConfigurator.Configure<TEndpoint>);
+        }
+
         return app;
 
         Task InnerInvokeAsync(HttpContext context)

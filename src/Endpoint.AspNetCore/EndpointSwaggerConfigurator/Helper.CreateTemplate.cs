@@ -1,56 +1,41 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.OpenApi.Models;
 
 namespace GGroupp.Infra.Endpoint;
 
-partial class EndpointSwaggerHelper
+partial class EndpointSwaggerConfigurator
 {
-    private const string DefaultDocumentTitle = "HTTP Endpoints API";
-
-    private const string DefaultDocumentVersion = "v1";
-
-    public static OpenApiDocument CreateSwaggerTemplate([AllowNull] this IEnumerable<EndpointMetadata> metadata)
-        =>
-        new OpenApiDocument
-        {
-            Info = new()
-            {
-                Title = DefaultDocumentTitle,
-                Version = DefaultDocumentVersion
-            }
-        }
-        .ConfigureEndpoints(metadata);
-
-    private static OpenApiDocument ConfigureEndpoints(this OpenApiDocument document, [AllowNull] IEnumerable<EndpointMetadata> metadata)
+    internal static void Configure<TEndpoint>(OpenApiDocument document)
+        where TEndpoint : class, IEndpointMetadataProvider
     {
+        if (document is null)
+        {
+            return;
+        }
+
+        var metadata = TEndpoint.GetEndpointMetadata();
         if (metadata is null)
         {
-            return document;
+            return;
         }
 
-        var schemas = new Dictionary<string, OpenApiSchema>(StringComparer.InvariantCultureIgnoreCase);
         var paths = document.Paths ?? new OpenApiPaths();
-
-        foreach (var endpoint in metadata)
-        {
-            schemas.AddSchemas(endpoint);
-            paths.AddPaths(endpoint);
-        }
-
-        if (schemas.Count > 0)
-        {
-            document.Components ??= new();
-            document.Components.Schemas = schemas;
-        }
+        paths.AddPaths(metadata);
 
         if (paths.Count > 0)
         {
             document.Paths = paths;
         }
 
-        return document;
+        document.Components ??= new();
+
+        var currentSchemas = document.Components.Schemas ?? Enumerable.Empty<KeyValuePair<string, OpenApiSchema>>();
+        var schemas = new Dictionary<string, OpenApiSchema>(currentSchemas, StringComparer.InvariantCultureIgnoreCase);
+
+        schemas.AddSchemas(metadata);
+        document.Components.Schemas = schemas;
     }
 
     private static void AddSchemas(this Dictionary<string, OpenApiSchema> schemas, EndpointMetadata endpoint)
