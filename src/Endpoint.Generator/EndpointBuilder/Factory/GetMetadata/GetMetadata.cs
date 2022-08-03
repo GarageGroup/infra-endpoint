@@ -174,7 +174,7 @@ partial class EndpointBuilder
             {
                 sourceBuilder.AppendContent(responseBodyType);
             }
-            else
+            else  if (responseJsonProperties.Count > 0)
             {
                 sourceBuilder.AppendJsonPropertiesContent(responseJsonProperties);
             }
