@@ -251,7 +251,7 @@ partial class EndpointBuilder
             sourceBuilder.AddUsing(type.ContainingNamespace.ToString());
             if (type.IsEnumType())
             {
-                return $"Get{nullableValue}Enum<{type.Name}>({jsonPropertyValue})";
+                return $"Get{nullableValue}EnumOrFailure<{type.Name}>({jsonPropertyValue})";
             }
 
             return $"DeserializeOrFailure<{type.Name}>({jsonPropertyValue}, logger, jsonSerializerOptions)";
