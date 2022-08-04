@@ -9,7 +9,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GGroupp.Infra</RootNamespace>
     <AssemblyName>GGroupp.Infra.Endpoint.Generator</AssemblyName>
-    <Version>0.1.2</Version>
+    <Version>0.1.3</Version>
   </PropertyGroup>
 
   <ItemGroup>

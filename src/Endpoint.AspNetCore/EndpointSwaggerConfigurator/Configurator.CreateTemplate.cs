@@ -22,7 +22,7 @@ partial class EndpointSwaggerConfigurator
         }
 
         var paths = document.Paths ?? new OpenApiPaths();
-        paths.AddPaths(metadata);
+        paths = paths.InsertPaths(metadata);
 
         if (paths.Count > 0)
         {
@@ -49,33 +49,35 @@ partial class EndpointSwaggerConfigurator
         }
     }
 
-    private static void AddPaths(this Dictionary<string, OpenApiPathItem> paths, EndpointMetadata metadata)
+    private static OpenApiPaths InsertPaths(this OpenApiPaths source, EndpointMetadata metadata)
     {
-        var pathItem = paths.GetOrCreatePathItem(metadata);
+        var (paths, pathItem) = source.GetOrCreatePathItem(metadata);
 
         var operationType = metadata.Method.ToOperationType();
         if (pathItem.Operations?.ContainsKey(operationType) is true)
         {
-            return;
+            return paths;
         }
 
         if (pathItem.Operations is not null)
         {
-            pathItem.Operations.Add(operationType, metadata.Operation);
-            return;
+            pathItem.Operations = pathItem.Operations.ToDictionary().Insert(operationType, metadata.Operation);
+            return paths;
         }
 
         pathItem.Operations = new Dictionary<OperationType, OpenApiOperation>
         {
             [operationType] = metadata.Operation
         };
+
+        return paths;
     }
 
-    private static OpenApiPathItem GetOrCreatePathItem(this Dictionary<string, OpenApiPathItem> paths, EndpointMetadata metadata)
+    private static (OpenApiPaths Paths, OpenApiPathItem Item) GetOrCreatePathItem(this OpenApiPaths paths, EndpointMetadata metadata)
     {
         if (paths.TryGetValue(metadata.Route, out var pathItem))
         {
-            return pathItem;
+            return (paths, pathItem);
         }
 
         var createdItem = new OpenApiPathItem
@@ -84,8 +86,7 @@ partial class EndpointSwaggerConfigurator
             Description = metadata.Description
         };
 
-        paths.Add(metadata.Route, createdItem);
-        return createdItem;
+        return(paths.Insert(metadata.Route, createdItem), createdItem);
     }
 
     private static OperationType ToOperationType(this EndpointMethod method)
