@@ -15,14 +15,14 @@ partial class EndpointBuilder
             $"public sealed partial class {type.TypeEndpointName} : IEndpoint")
         .BeginCodeBlock()
         .AppendCodeLine(
-            $"internal static {type.TypeEndpointName} Resolve(IServiceProvider serviceProvider!!, {type.TypeFuncName} endpointFunc!!)")
+            $"internal static {type.TypeEndpointName} Resolve(IServiceProvider? serviceProvider, {type.TypeFuncName} endpointFunc)")
         .BeginLambda()
         .AppendCodeLine(
             "new(")
         .BeginArguments()
         .AppendCodeLine(
-            "endpointFunc: endpointFunc,",
-            $"logger: serviceProvider.GetEndpointLogger<{type.TypeEndpointName}>());")
+            $"endpointFunc: {GetNullValidationValue("endpointFunc", type.IsTypeFuncStruct)},",
+            $"logger: serviceProvider?.GetEndpointLogger<{type.TypeEndpointName}>());")
         .EndArguments()
         .EndLambda()
         .AppendEmptyLine()
@@ -44,4 +44,12 @@ partial class EndpointBuilder
         .EndCodeBlock()
         .EndCodeBlock()
         .Build();
+
+    private static string GetNullValidationValue(string argumentName, bool isStructType)
+        =>
+        isStructType switch
+        {
+            true => argumentName,
+            _ => $"{argumentName} ?? throw new ArgumentNullException(nameof({argumentName}))"
+        };
 }

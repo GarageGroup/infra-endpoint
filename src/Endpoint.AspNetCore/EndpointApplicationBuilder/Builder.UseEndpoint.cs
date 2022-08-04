@@ -16,10 +16,13 @@ namespace Microsoft.AspNetCore.Builder;
 partial class EndpointApplicationBuilder
 {
     public static TApplicationBuilder UseEndpoint<TApplicationBuilder, TEndpoint>(
-        this TApplicationBuilder app!!, Func<IServiceProvider, TEndpoint> endpointResolver!!)
+        this TApplicationBuilder app, Func<IServiceProvider, TEndpoint> endpointResolver)
         where TApplicationBuilder : IApplicationBuilder
         where TEndpoint : class, IEndpoint
     {
+        _ = app ?? throw new ArgumentNullException(nameof(app));
+        _ = endpointResolver ?? throw new ArgumentNullException(nameof(endpointResolver));
+
         var metadata = TEndpoint.GetEndpointMetadata();
 
         var verb = metadata.Method.ToString("F").ToUpperInvariant();
@@ -41,7 +44,8 @@ partial class EndpointApplicationBuilder
             context.InvokeAsync(endpointResolver);
     }
 
-    private static Task InvokeAsync(this HttpContext context, Func<IServiceProvider, IEndpoint> endpointResolver)
+    private static Task InvokeAsync<TEndpoint>(this HttpContext context, Func<IServiceProvider, TEndpoint> endpointResolver)
+        where TEndpoint : class, IEndpoint
     {
         if (context.RequestAborted.IsCancellationRequested)
         {
