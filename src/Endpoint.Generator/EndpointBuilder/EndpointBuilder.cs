@@ -15,6 +15,21 @@ internal static partial class EndpointBuilder
 
     private const string NoContentStatusCodeValue = "204";
 
+    private static SourceBuilder RegisterType(this SourceBuilder sourceBuilder, TypeData? type)
+    {
+        if (type?.Namespaces.Any() is not true)
+        {
+            return sourceBuilder;
+        }
+
+        if (type.Namespaces.Count is 1)
+        {
+            return sourceBuilder.AddUsing(type.Namespaces.First());
+        }
+
+        return sourceBuilder.AddUsing(type.Namespaces.First(), type.Namespaces.Skip(1).ToArray());
+    }
+
     private static string GetDefaultStatusCode(this EndpointTypeDescription type)
         =>
         type.HasResponseBody() ? DefaultSuccessStatusCodeValue : NoContentStatusCodeValue;

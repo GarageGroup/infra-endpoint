@@ -19,10 +19,13 @@ partial class EndpointBuilder
             "System.Threading.Tasks",
             "GGroupp.Infra",
             "GGroupp.Infra.Endpoint",
-            "Microsoft.Extensions.Logging",
-            type.RequestType?.ContainingNamespace.ToString(),
-            type.ResponseType?.ContainingNamespace.ToString(),
-            type.FailureCodeType?.ContainingNamespace.ToString())
+            "Microsoft.Extensions.Logging")
+        .RegisterType(
+            type.RequestType?.GetTypeData())
+        .RegisterType(
+            type.ResponseType?.GetTypeData())
+        .RegisterType(
+            type.FailureCodeType?.GetTypeData())
         .AppendCodeLine(
             "partial class " + type.TypeEndpointName)
         .BeginCodeBlock()
@@ -155,11 +158,13 @@ partial class EndpointBuilder
                 continue;
             }
 
-            sourceBuilder.AddUsing(requestBody.BodyType.ContainingNamespace.ToString());
+            var requestBodyData = requestBody.BodyType.GetTypeData();
+
+            sourceBuilder.RegisterType(requestBodyData);
             resultParameters.Add(parameter.Name);
 
             var codeLine = new StringBuilder(
-                $"var {parameter.Name}Result = await request.DeserializeBodyAsync<{requestBody.BodyType.Name}>")
+                $"var {parameter.Name}Result = await request.DeserializeBodyAsync<{requestBodyData.Name}>")
             .Append(
                 "(jsonSerializerOptions, logger, token).ConfigureAwait(false);")
             .ToString();
@@ -248,13 +253,15 @@ partial class EndpointBuilder
                 return $"GetStringOrFailure({jsonPropertyValue})";
             }
 
-            sourceBuilder.AddUsing(type.ContainingNamespace.ToString());
+            var typeData = type.GetTypeData();
+            sourceBuilder.RegisterType(typeData);
+
             if (type.IsEnumType())
             {
-                return $"Get{nullableValue}EnumOrFailure<{type.Name}>({jsonPropertyValue})";
+                return $"Get{nullableValue}EnumOrFailure<{typeData.Name}>({jsonPropertyValue})";
             }
 
-            return $"DeserializeOrFailure<{type.Name}>({jsonPropertyValue}, logger, jsonSerializerOptions)";
+            return $"DeserializeOrFailure<{typeData.Name}>({jsonPropertyValue}, logger, jsonSerializerOptions)";
         }
     }
 
@@ -535,8 +542,10 @@ partial class EndpointBuilder
 
             if (type.IsEnumType())
             {
-                builder.AddUsing(type.ContainingNamespace.ToString());
-                return "Parse" + nullableValue + $"Enum<{type.Name}>";
+                var typeData = type.GetTypeData();
+                builder.RegisterType(typeData);
+
+                return "Parse" + nullableValue + $"Enum<{typeData.Name}>";
             }
 
             throw new NotSupportedException($"Type {type.Name} is not supported as a request parameter type");
