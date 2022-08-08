@@ -114,6 +114,11 @@ partial class EndpointBuilder
             return $"CreateDateTimeSchema({isNullable.ToStringValue()})";
         }
 
+        if (type.IsSystemType(nameof(TimeSpan)))
+        {
+            return $"CreateTimeSpanSchema({isNullable.ToStringValue()})";
+        }
+
         if (type.IsSystemType(nameof(Boolean)))
         {
             return $"CreateBooleanSchema({isNullable.ToStringValue()})";
