@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>GGroupp.Infra</RootNamespace>
+    <AssemblyName>GGroupp.Infra.Endpoint.Core</AssemblyName>
+    <Version>0.3.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GGroupp.Infra.Endpoint.Annotation" Version="0.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
+    <PackageReference Include="Microsoft.OpenApi" Version="1.3.2" />
+    <PackageReference Include="PrimeFuncPack.Core.Failure" Version="2.0.1" />
+    <PackageReference Include="PrimeFuncPack.Core.Optional" Version="2.0.1" />
+    <PackageReference Include="PrimeFuncPack.Core.Result" Version="2.0.1" />
+  </ItemGroup>
+
+</Project>
