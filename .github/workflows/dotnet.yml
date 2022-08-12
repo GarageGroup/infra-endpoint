@@ -27,17 +27,6 @@ jobs:
     - name: Add GGroupp NuGet Source
       run: dotnet nuget add source ${{ secrets.GGROUPP_NUGET_SOURCE_URL }} -n ggroupp -u ${{ secrets.GGROUPP_NUGET_SOURCE_USER_NAME }} -p ${{ secrets.GGROUPP_NUGET_SOURCE_USER_PASSWORD }} --store-password-in-clear-text
 
-    # CodeAnalysis.SourceBuilder
-
-    - name: Restore CodeAnalysis.SourceBuilder
-      run: dotnet restore ./src/*/*/CodeAnalysis.SourceBuilder.csproj
-
-    - name: Build CodeAnalysis.SourceBuilder
-      run: dotnet build ./src/*/*/CodeAnalysis.SourceBuilder.csproj --no-restore  -c Release
-
-    - name: Pack CodeAnalysis.SourceBuilder
-      run: dotnet pack ./src/*/*/CodeAnalysis.SourceBuilder.csproj --no-restore -o ~/nuget  -c Release
-
     # Endpoint.Annotation
 
     - name: Restore Endpoint.Annotation
@@ -59,17 +48,6 @@ jobs:
 
     - name: Pack Endpoint.Core
       run: dotnet pack ./src/*/*/Endpoint.Core.csproj --no-restore -o ~/nuget  -c Release
-
-    # Endpoint.Generator
-
-    - name: Restore Endpoint.Generator
-      run: dotnet restore ./src/*/*/Endpoint.Generator.csproj
-
-    - name: Build Endpoint.Generator
-      run: dotnet build ./src/*/*/Endpoint.Generator.csproj --no-restore  -c Release
-
-    - name: Pack Endpoint.Generator
-      run: dotnet pack ./src/*/*/Endpoint.Generator.csproj --no-restore -o ~/nuget  -c Release
 
     # Endpoint.AspNetCore
 
@@ -103,6 +81,28 @@ jobs:
 
     - name: Pack Endpoint.Core.Schema.Base64String
       run: dotnet pack ./src/*/*/Endpoint.Core.Schema.Base64String.csproj --no-restore -o ~/nuget  -c Release
+
+    # CodeAnalysis.SourceBuilder
+
+    - name: Restore CodeAnalysis.SourceBuilder
+      run: dotnet restore ./src/*/*/CodeAnalysis.SourceBuilder.csproj
+
+    - name: Build CodeAnalysis.SourceBuilder
+      run: dotnet build ./src/*/*/CodeAnalysis.SourceBuilder.csproj --no-restore  -c Release
+
+    - name: Pack CodeAnalysis.SourceBuilder
+      run: dotnet pack ./src/*/*/CodeAnalysis.SourceBuilder.csproj --no-restore -o ~/nuget  -c Release
+
+    # Endpoint.Generator
+
+    - name: Restore Endpoint.Generator
+      run: dotnet restore ./src/*/*/Endpoint.Generator.csproj
+
+    - name: Build Endpoint.Generator
+      run: dotnet build ./src/*/*/Endpoint.Generator.csproj --no-restore  -c Release
+
+    - name: Pack Endpoint.Generator
+      run: dotnet pack ./src/*/*/Endpoint.Generator.csproj --no-restore -o ~/nuget  -c Release
 
     # Push
 
