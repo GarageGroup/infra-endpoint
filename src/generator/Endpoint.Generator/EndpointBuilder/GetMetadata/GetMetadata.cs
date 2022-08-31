@@ -287,7 +287,7 @@ partial class EndpointBuilder
                 return builder.AppendCodeLine($"{parameterName} = {simpleSchemaFunction},");
             }
 
-            if (level >= MaxSchemaLevel)
+            if (level >= MaxRecursiveSchemaLevel)
             {
                 return builder.AppendCodeLine($"{parameterName} = CreateDefaultSchema({type.IsNullable().ToStringValue()}),");
             }

@@ -9,7 +9,7 @@ using static EndpointAttributeHelper;
 
 internal static partial class EndpointBuilder
 {
-    private const int MaxSchemaLevel = 3;
+    private const int MaxRecursiveSchemaLevel = 7;
 
     private const string DefaultSuccessStatusCodeValue = "200";
 
