@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="GGroupp.Infra.Endpoint.SchemaProvider" Version="0.0.1" />
-    <PackageReference Include="GGroupp.Infra.Endpoint.TypeParser" Version="0.0.1-build.2" />
+    <PackageReference Include="GGroupp.Infra.Endpoint.TypeParser" Version="0.0.1" />
   </ItemGroup>
 
 </Project>
