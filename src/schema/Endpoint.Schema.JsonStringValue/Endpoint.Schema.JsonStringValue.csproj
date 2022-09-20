@@ -8,18 +8,13 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GGroupp.Infra</RootNamespace>
-    <AssemblyName>GGroupp.Infra.Endpoint.AspNetCore</AssemblyName>
-    <Version>0.4.1</Version>
+    <AssemblyName>GGroupp.Infra.Endpoint.Schema.JsonStringValue</AssemblyName>
+    <Version>0.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="GGroupp.Infra.Endpoint.Core" Version="0.3.1" />
-    <PackageReference Include="GGroupp.Infra.Swagger.Builder.Abstractions" Version="1.0.0" />
-    <PackageReference Include="PrimeFuncPack.Dependency.Core" Version="2.0.2" />
+    <PackageReference Include="GGroupp.Infra.Endpoint.SchemaProvider" Version="0.0.1" />
+    <PackageReference Include="GGroupp.Infra.Endpoint.TypeParser" Version="0.0.1-build.2" />
   </ItemGroup>
 
 </Project>

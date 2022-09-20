@@ -16,11 +16,17 @@ partial class EndpointDeserializer
 
     private static Result<long, Failure<Unit>> GetInt64OrFailure(JsonElement jsonElement, string propertyName)
     {
-        if (jsonElement.ValueKind is not JsonValueKind.Number)
+        if (jsonElement.ValueKind is JsonValueKind.Number)
         {
-            return CreateValueKindFailure(propertyName, JsonValueKind.Number);
+            return jsonElement.TryGetInt64(out var value) ? value : CreateParserFailure(propertyName, nameof(Int64));
         }
 
-        return jsonElement.TryGetInt64(out var value) ? value : CreateParserFailure(propertyName, nameof(Int64));
+        if (jsonElement.ValueKind is JsonValueKind.String)
+        {
+            var text = jsonElement.GetString() ?? string.Empty;
+            return long.TryParse(text, out var value) ? value : CreateParserFailure(propertyName, nameof(Int64));
+        }
+
+        return CreateValueKindFailure(propertyName, JsonValueKind.Number, JsonValueKind.String);
     }
 }

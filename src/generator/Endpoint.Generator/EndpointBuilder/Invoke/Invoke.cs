@@ -527,7 +527,7 @@ partial class EndpointBuilder
         resultParameters.Add(parameter.Name);
 
         return builder.AppendCodeLine(
-            $"var {parameter.Name}Result = EndpointParser.{GetParserFunctionName()}(request.{requestFunctionValue});")
+            $"var {parameter.Name}Result = {GetParserFunctionName()}(request.{requestFunctionValue});")
         .AppendCodeLine(
             $"if ({parameter.Name}Result.IsFailure)")
         .BeginCodeBlock()
@@ -539,15 +539,20 @@ partial class EndpointBuilder
         {
             if (type.IsAnySystemType(GetParserSystemTypes()))
             {
-                return "Parse" + nullableValue + type.Name;
+                return "EndpointParser.Parse" + nullableValue + type.Name;
             }
+
+            var typeData = type.GetTypeData();
+            builder.AddUsings(typeData.Namespaces);
 
             if (type.IsEnumType())
             {
-                var typeData = type.GetTypeData();
-                builder.AddUsings(typeData.Namespaces);
+                return "EndpointParser.Parse" + nullableValue + $"Enum<{typeData.Name}>";
+            }
 
-                return "Parse" + nullableValue + $"Enum<{typeData.Name}>";
+            if (type.IsEndpointTypeParser())
+            {
+                return $"{typeData.Name}.Parse";
             }
 
             throw new NotSupportedException($"Type {type.Name} is not supported as a request parameter type");
