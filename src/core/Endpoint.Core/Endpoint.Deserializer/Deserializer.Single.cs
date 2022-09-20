@@ -16,11 +16,17 @@ partial class EndpointDeserializer
 
     private static Result<float, Failure<Unit>> GetSingleOrFailure(JsonElement jsonElement, string propertyName)
     {
-        if (jsonElement.ValueKind is not JsonValueKind.Number)
+        if (jsonElement.ValueKind is JsonValueKind.Number)
         {
-            return CreateValueKindFailure(propertyName, JsonValueKind.Number);
+            return jsonElement.TryGetSingle(out var value) ? value : CreateParserFailure(propertyName, nameof(Single));
         }
 
-        return jsonElement.TryGetSingle(out var value) ? value : CreateParserFailure(propertyName, nameof(Single));
+        if (jsonElement.ValueKind is JsonValueKind.String)
+        {
+            var text = jsonElement.GetString() ?? string.Empty;
+            return float.TryParse(text, out var value) ? value : CreateParserFailure(propertyName, nameof(Single));
+        }
+
+        return CreateValueKindFailure(propertyName, JsonValueKind.Number, JsonValueKind.String);
     }
 }

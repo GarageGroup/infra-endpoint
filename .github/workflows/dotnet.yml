@@ -71,16 +71,38 @@ jobs:
     - name: Pack Endpoint.SchemaProvider
       run: dotnet pack ./src/*/*/Endpoint.SchemaProvider.csproj --no-restore -o ~/nuget  -c Release
 
-    # Endpoint.Core.Schema.Base64String
+    # Endpoint.TypeParser
 
-    - name: Restore Endpoint.Core.Schema.Base64String
-      run: dotnet restore ./src/*/*/Endpoint.Core.Schema.Base64String.csproj
+    - name: Restore Endpoint.TypeParser
+      run: dotnet restore ./src/*/*/Endpoint.TypeParser.csproj
 
-    - name: Build Endpoint.Core.Schema.Base64String
-      run: dotnet build ./src/*/*/Endpoint.Core.Schema.Base64String.csproj --no-restore  -c Release
+    - name: Build Endpoint.TypeParser
+      run: dotnet build ./src/*/*/Endpoint.TypeParser.csproj --no-restore  -c Release
 
-    - name: Pack Endpoint.Core.Schema.Base64String
-      run: dotnet pack ./src/*/*/Endpoint.Core.Schema.Base64String.csproj --no-restore -o ~/nuget  -c Release
+    - name: Pack Endpoint.TypeParser
+      run: dotnet pack ./src/*/*/Endpoint.TypeParser.csproj --no-restore -o ~/nuget  -c Release
+
+    # Endpoint.Schema.Base64String
+
+    - name: Restore Endpoint.Schema.Base64String
+      run: dotnet restore ./src/*/*/Endpoint.Schema.Base64String.csproj
+
+    - name: Build Endpoint.Schema.Base64String
+      run: dotnet build ./src/*/*/Endpoint.Schema.Base64String.csproj --no-restore  -c Release
+
+    - name: Pack Endpoint.Schema.Base64String
+      run: dotnet pack ./src/*/*/Endpoint.Schema.Base64String.csproj --no-restore -o ~/nuget  -c Release
+
+    # Endpoint.Schema.JsonStringValue
+
+    - name: Restore Endpoint.Schema.JsonStringValue
+      run: dotnet restore ./src/*/*/Endpoint.Schema.JsonStringValue.csproj
+
+    - name: Build Endpoint.Schema.JsonStringValue
+      run: dotnet build ./src/*/*/Endpoint.Schema.JsonStringValue.csproj --no-restore  -c Release
+
+    - name: Pack Endpoint.Schema.JsonStringValue
+      run: dotnet pack ./src/*/*/Endpoint.Schema.JsonStringValue.csproj --no-restore -o ~/nuget  -c Release
 
     # CodeAnalysis.SourceBuilder
 
