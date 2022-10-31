@@ -374,7 +374,14 @@ partial class EndpointBuilder
 
             if (headerProperty.Value.Type.IsSystemType("String") is false)
             {
-                propertyName += "?.ToString()";
+                if (headerProperty.Value.Type.IsValueType && headerProperty.Value.Type.IsNullable() is false)
+                {
+                    propertyName += ".ToString()";
+                }
+                else
+                {
+                    propertyName += "?.ToString()";
+                }
             }
 
             return new(headerProperty.Key.ToStringValueOrEmpty(), $"success.{propertyName}");
