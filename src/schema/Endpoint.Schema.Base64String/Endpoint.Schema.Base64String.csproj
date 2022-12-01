@@ -8,11 +8,11 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GGroupp.Infra</RootNamespace>
     <AssemblyName>GGroupp.Infra.Endpoint.Schema.Base64String</AssemblyName>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GGroupp.Infra.Endpoint.SchemaProvider" Version="0.1.0" />
+    <PackageReference Include="GGroupp.Infra.Endpoint.SchemaProvider" Version="0.1.1" />
   </ItemGroup>
 
 </Project>

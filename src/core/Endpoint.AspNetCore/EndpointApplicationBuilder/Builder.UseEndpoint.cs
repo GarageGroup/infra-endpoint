@@ -10,6 +10,7 @@ using GGroupp.Infra.Endpoint;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
+using PrimeFuncPack;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -20,8 +21,8 @@ partial class EndpointApplicationBuilder
         where TApplicationBuilder : IApplicationBuilder
         where TEndpoint : class, IEndpoint
     {
-        _ = app ?? throw new ArgumentNullException(nameof(app));
-        _ = endpointResolver ?? throw new ArgumentNullException(nameof(endpointResolver));
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(endpointResolver);
 
         var metadata = TEndpoint.GetEndpointMetadata();
 
