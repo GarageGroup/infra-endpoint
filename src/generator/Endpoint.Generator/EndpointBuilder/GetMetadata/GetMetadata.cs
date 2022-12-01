@@ -156,47 +156,40 @@ partial class EndpointBuilder
 
     private static SourceBuilder AppendSuccessResponsesBody(this SourceBuilder sourceBuilder, EndpointTypeDescription type)
     {
-        try
+        if (type.ResponseType is null)
         {
-            if (type.ResponseType is null)
-            {
-                return sourceBuilder;
-            }
-
-            var successStatusCodes = type.GetSuccessStatusCodes();
-            if (successStatusCodes.Count is 0)
-            {
-                successStatusCodes = new[] { type.GetDefaultStatusCode() };
-            }
-
-            var responseBodyType = type.GetResponseBodyType();
-            var responseJsonProperties = type.GetResponseJsonBodyProperties();
-
-            foreach (var successStatusCode in successStatusCodes)
-            {
-                sourceBuilder
-                    .AppendCodeLine($"[{successStatusCode.ToStringValueOrEmpty()}] = new()")
-                    .BeginCodeBlock()
-                    .AppendCodeLine($"Description = {GetStatusDescription(successStatusCode).ToStringValueOrDefault()},");
-
-                if (responseBodyType is not null)
-                {
-                    sourceBuilder.AppendContent(responseBodyType);
-                }
-                else if (responseJsonProperties.Count > 0)
-                {
-                    sourceBuilder.AppendJsonPropertiesContent(responseJsonProperties);
-                }
-
-                sourceBuilder.EndCodeBlock(',');
-            }
-
             return sourceBuilder;
         }
-        catch (System.NullReferenceException ex)
+
+        var successStatusCodes = type.GetSuccessStatusCodes();
+        if (successStatusCodes.Count is 0)
         {
-            throw new System.InvalidOperationException(ex.StackTrace, ex);
+            successStatusCodes = new[] { type.GetDefaultStatusCode() };
         }
+
+        var responseBodyType = type.GetResponseBodyType();
+        var responseJsonProperties = type.GetResponseJsonBodyProperties();
+
+        foreach (var successStatusCode in successStatusCodes)
+        {
+            sourceBuilder
+                .AppendCodeLine($"[{successStatusCode.ToStringValueOrEmpty()}] = new()")
+                .BeginCodeBlock()
+                .AppendCodeLine($"Description = {GetStatusDescription(successStatusCode).ToStringValueOrDefault()},");
+
+            if (responseBodyType is not null)
+            {
+                sourceBuilder.AppendContent(responseBodyType);
+            }
+            else if (responseJsonProperties.Count > 0)
+            {
+                sourceBuilder.AppendJsonPropertiesContent(responseJsonProperties);
+            }
+
+            sourceBuilder.EndCodeBlock(',');
+        }
+
+        return sourceBuilder;
     }
 
     private static SourceBuilder AppendFailureResponsesBody(this SourceBuilder sourceBuilder, EndpointTypeDescription type)
