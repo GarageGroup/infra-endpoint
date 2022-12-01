@@ -12,8 +12,8 @@ public static class EndpointApplicationDependency
         where TApplicationBuilder : IApplicationBuilder
         where TEndpoint : class, IEndpoint
     {
-        _ = dependency ?? throw new ArgumentNullException(nameof(dependency));
-        _ = applicationBuilder ?? throw new ArgumentNullException(nameof(applicationBuilder));
+        ArgumentNullException.ThrowIfNull(dependency);
+        ArgumentNullException.ThrowIfNull(applicationBuilder);
 
         return applicationBuilder.UseEndpoint(dependency.Resolve);
     }
