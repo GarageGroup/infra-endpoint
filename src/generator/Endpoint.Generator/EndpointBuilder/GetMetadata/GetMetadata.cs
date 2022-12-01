@@ -304,7 +304,7 @@ partial class EndpointBuilder
 
         type = type.GetNullableStructType() ?? type;
 
-        var collectionType = type.GetCollectionType();
+        var collectionType = type.GetCollectionTypeOrDefault();
         if (collectionType is not null)
         {
             return builder.AppendCodeLine("Type = \"array\",").AppendSchema("Items", collectionType, level, exampleValue).EndCodeBlock(afterSymbol);

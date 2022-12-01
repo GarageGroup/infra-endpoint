@@ -272,25 +272,6 @@ internal static partial class EndpointBuilder
         return namedTypeSymbol.TypeArguments[0];
     }
 
-    private static ITypeSymbol? GetCollectionType(this ITypeSymbol typeSymbol)
-    {
-        if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
-        {
-            return arrayTypeSymbol.ElementType;
-        }
-
-        if (typeSymbol is not INamedTypeSymbol namedTypeSymbol)
-        {
-            return null;
-        }
-
-        return namedTypeSymbol.AllInterfaces.FirstOrDefault(IsEnumerable)?.TypeArguments[0];
-
-        static bool IsEnumerable(INamedTypeSymbol symbol)
-            =>
-            symbol.IsType("System.Collections.Generic", "IEnumerable") && symbol.TypeArguments.Length is 1;
-    }
-
     private static bool IsPublic(this IMethodSymbol methodSymbol)
         =>
         methodSymbol.DeclaredAccessibility is Accessibility.Public;
