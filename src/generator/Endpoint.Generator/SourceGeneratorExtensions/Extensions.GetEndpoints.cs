@@ -18,7 +18,7 @@ internal static partial class SourceGeneratorExtensions
         var visitor = new ExportedTypesCollector(context.CancellationToken);
         visitor.VisitAssembly(context.Compilation.Assembly);
 
-        return visitor.GetNotStaticTypes().Select(InnerGetEndpointType).Where(NotNull).ToArray()!;
+        return visitor.GetNonStaticTypes().Select(InnerGetEndpointType).Where(NotNull).ToArray()!;
 
         EndpointTypeDescription? InnerGetEndpointType(INamedTypeSymbol typeSymbol)
             =>

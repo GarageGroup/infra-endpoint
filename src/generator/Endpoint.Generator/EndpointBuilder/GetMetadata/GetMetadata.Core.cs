@@ -78,7 +78,7 @@ partial class EndpointBuilder
     private static string GetArrayOrDefaultSchemaFunction(this ITypeSymbol typeSymbol, List<string> usings, string? exmapleValue)
     {
         var isNullable = typeSymbol.IsNullable();
-        var collectionType = typeSymbol.GetCollectionType();
+        var collectionType = typeSymbol.GetCollectionTypeOrDefault();
 
         if (collectionType is null)
         {
@@ -170,7 +170,7 @@ partial class EndpointBuilder
             return InnerBuildSchemaFunction("CreateBinarySchema");
         }
 
-        if (type.GetCollectionType()?.IsSystemType(nameof(Byte)) is true)
+        if (type.GetCollectionTypeOrDefault()?.IsSystemType(nameof(Byte)) is true)
         {
             return InnerBuildSchemaFunction("CreateByteSchema");
         }
