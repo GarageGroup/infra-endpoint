@@ -274,6 +274,11 @@ internal static partial class EndpointBuilder
 
     private static ITypeSymbol? GetCollectionType(this ITypeSymbol typeSymbol)
     {
+        if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
+        {
+            return arrayTypeSymbol.ElementType;
+        }
+
         if (typeSymbol is not INamedTypeSymbol namedTypeSymbol)
         {
             return null;

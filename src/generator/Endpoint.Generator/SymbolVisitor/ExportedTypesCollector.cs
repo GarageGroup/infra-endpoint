@@ -17,7 +17,7 @@ internal sealed class ExportedTypesCollector : SymbolVisitor
         exportedTypes = new(SymbolEqualityComparer.Default);
     }
 
-    public IReadOnlyCollection<INamedTypeSymbol> GetNotStaticTypes()
+    public IReadOnlyCollection<INamedTypeSymbol> GetNonStaticTypes()
         =>
         exportedTypes.ToImmutableArray();
 

@@ -18,7 +18,7 @@ internal static partial class SourceGeneratorExtensions
         var visitor = new ExportedTypesCollector(context.CancellationToken);
         visitor.VisitAssembly(context.Compilation.Assembly);
 
-        return visitor.GetNotStaticTypes().Select(InnerGetEndpointType).Where(NotNull).ToArray()!;
+        return visitor.GetNonStaticTypes().Select(InnerGetEndpointType).Where(NotNull).ToArray()!;
 
         EndpointTypeDescription? InnerGetEndpointType(INamedTypeSymbol typeSymbol)
             =>
@@ -31,53 +31,60 @@ internal static partial class SourceGeneratorExtensions
 
     private static EndpointTypeDescription? GetEndpointType(INamedTypeSymbol typeSymbol, INamedTypeSymbol endpointAttributeType)
     {
-        var endpointAttributeData = typeSymbol.GetAttributes().FirstOrDefault(IsEndpointAttribute);
-        if (endpointAttributeData is null)
+        try
         {
-            return null;
-        }
-
-        if (typeSymbol.TypeParameters.Length > 0)
-        {
-            throw new NotSupportedException("Generic types are not supported");
-        }
-
-        var endpointMethod = typeSymbol.GetMembers().OfType<IMethodSymbol>().FirstOrDefault(IsEndpointMethod);
-        if (endpointMethod is null)
-        {
-            throw new InvalidOperationException($"An endpoint method was not found in the type {typeSymbol.Name}");
-        }
-
-        var resultType = endpointMethod.ReturnType.GetTaskType() as INamedTypeSymbol;
-        var failureType = resultType?.TypeArguments[1] as INamedTypeSymbol;
-
-        var typeRootName = typeSymbol.Name.GetTypeRootName();
-
-        var tags = typeSymbol.GetEndpointTags().ToArray();
-        if (tags.Length is 0 && string.IsNullOrEmpty(typeRootName) is false)
-        {
-            tags = new EndpointTag[]
+            var endpointAttributeData = typeSymbol.GetAttributes().FirstOrDefault(IsEndpointAttribute);
+            if (endpointAttributeData is null)
             {
-                new(typeRootName!, null)
+                return null;
+            }
+
+            if (typeSymbol.TypeParameters.Length > 0)
+            {
+                throw new NotSupportedException("Generic types are not supported");
+            }
+
+            var endpointMethod = typeSymbol.GetMembers().OfType<IMethodSymbol>().FirstOrDefault(IsEndpointMethod);
+            if (endpointMethod is null)
+            {
+                throw new InvalidOperationException($"An endpoint method was not found in the type {typeSymbol.Name}");
+            }
+
+            var resultType = endpointMethod.ReturnType.GetTaskType() as INamedTypeSymbol;
+            var failureType = resultType?.TypeArguments[1] as INamedTypeSymbol;
+
+            var typeRootName = typeSymbol.Name.GetTypeRootName();
+
+            var tags = typeSymbol.GetEndpointTags().ToArray();
+            if (tags.Length is 0 && string.IsNullOrEmpty(typeRootName) is false)
+            {
+                tags = new EndpointTag[]
+                {
+                    new(typeRootName!, null)
+                };
+            }
+
+            return new()
+            {
+                Namespace = typeSymbol.ContainingNamespace.ToString(),
+                TypeRootName = typeRootName,
+                TypeFuncName = typeSymbol.Name,
+                IsTypeFuncStruct = typeSymbol.IsReferenceType is false,
+                MethodFuncName = endpointMethod.Name,
+                Method = GetMethodValue(endpointAttributeData.ConstructorArguments[0].Value),
+                Route = endpointAttributeData.ConstructorArguments[1].Value?.ToString(),
+                Summary = endpointAttributeData.GetAttributePropertyValue("Summary")?.ToString(),
+                Description = endpointAttributeData.GetAttributePropertyValue("Description")?.ToString(),
+                Tags = tags,
+                RequestType = endpointMethod.Parameters[0].Type,
+                ResponseType = resultType?.TypeArguments[0],
+                FailureCodeType = failureType?.TypeArguments[0]
             };
         }
-
-        return new()
+        catch (NullReferenceException ex)
         {
-            Namespace = typeSymbol.ContainingNamespace.ToString(),
-            TypeRootName = typeRootName,
-            TypeFuncName = typeSymbol.Name,
-            IsTypeFuncStruct = typeSymbol.IsReferenceType is false,
-            MethodFuncName = endpointMethod.Name,
-            Method = GetMethodValue(endpointAttributeData.ConstructorArguments[0].Value),
-            Route = endpointAttributeData.ConstructorArguments[1].Value?.ToString(),
-            Summary = endpointAttributeData.GetAttributePropertyValue("Summary")?.ToString(),
-            Description = endpointAttributeData.GetAttributePropertyValue("Description")?.ToString(),
-            Tags = tags,
-            RequestType = endpointMethod.Parameters[0].Type,
-            ResponseType = resultType?.TypeArguments[0],
-            FailureCodeType = failureType?.TypeArguments[0]
-        };
+            throw new InvalidOperationException("GetEndpointType!", ex);
+        }
 
         bool IsEndpointAttribute(AttributeData attributeData)
             =>
