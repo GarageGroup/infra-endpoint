@@ -15,7 +15,12 @@ partial class EndpointSwaggerConfigurator
             return;
         }
 
+#if NET7_0_OR_GREATER
         var metadata = TEndpoint.GetEndpointMetadata();
+#else
+        var metadata = IEndpointMetadataProvider.GetEndpointMetadata<TEndpoint>();
+#endif
+
         if (metadata is null)
         {
             return;
