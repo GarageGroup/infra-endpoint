@@ -10,7 +10,6 @@ using GGroupp.Infra.Endpoint;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
-using PrimeFuncPack;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -24,7 +23,11 @@ partial class EndpointApplicationBuilder
         ArgumentNullException.ThrowIfNull(app);
         ArgumentNullException.ThrowIfNull(endpointResolver);
 
+#if NET7_0_OR_GREATER
         var metadata = TEndpoint.GetEndpointMetadata();
+#else
+        var metadata = IEndpointMetadataProvider.GetEndpointMetadata<TEndpoint>();
+#endif
 
         var verb = metadata.Method.ToString("F").ToUpperInvariant();
         var template = metadata.Route;
