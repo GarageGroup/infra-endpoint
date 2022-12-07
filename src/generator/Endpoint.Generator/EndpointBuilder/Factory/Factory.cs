@@ -22,25 +22,29 @@ partial class EndpointBuilder
         .BeginArguments()
         .AppendCodeLine(
             $"endpointFunc: {GetNullValidationValue("endpointFunc", type.IsTypeFuncStruct)},",
+            $"jsonSerializerOptions: {type.GetSerializerOptionsValue()},",
             $"logger: serviceProvider?.GetEndpointLogger<{type.TypeEndpointName}>());")
         .EndArguments()
         .EndLambda()
         .AppendEmptyLine()
         .AppendCodeLine(
-            "private static readonly JsonSerializerOptions jsonSerializerOptions = new(JsonSerializerDefaults.Web);")
+            "private static readonly JsonSerializerOptions DefaultSerializerOptions = new(JsonSerializerDefaults.Web);")
         .AppendEmptyLine()
         .AppendCodeLine(
             $"private readonly {type.TypeFuncName} endpointFunc;")
         .AppendEmptyLine()
         .AppendCodeLine(
-            "private readonly ILogger? logger;")
+            "private readonly JsonSerializerOptions jsonSerializerOptions;")
         .AppendEmptyLine()
         .AppendCodeLine(
-            $"private {type.TypeEndpointName}({type.TypeFuncName} endpointFunc, ILogger? logger)")
+            "private readonly ILogger? logger;")
+        .AppendCodeLine(
+            $"private {type.TypeEndpointName}({type.TypeFuncName} endpointFunc, JsonSerializerOptions jsonSerializerOptions, ILogger? logger)")
         .BeginCodeBlock()
         .AppendCodeLine(
             "this.endpointFunc = endpointFunc;",
-            "this.logger = logger;")
+            "this.logger = logger;",
+            "this.jsonSerializerOptions = jsonSerializerOptions;")
         .EndCodeBlock()
         .EndCodeBlock()
         .Build();
@@ -52,4 +56,14 @@ partial class EndpointBuilder
             true => argumentName,
             _ => $"{argumentName} ?? throw new ArgumentNullException(nameof({argumentName}))"
         };
+
+    private static string GetSerializerOptionsValue(this EndpointTypeDescription type)
+    {
+        if (string.IsNullOrEmpty(type.SerializerOptionsPropertyFuncName))
+        {
+            return "DefaultSerializerOptions";
+        }
+
+        return $"{type.TypeFuncName}.{type.SerializerOptionsPropertyFuncName} ?? DefaultSerializerOptions";
+    }
 }
