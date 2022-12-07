@@ -69,6 +69,7 @@ internal static partial class SourceGeneratorExtensions
             TypeFuncName = typeSymbol.Name,
             IsTypeFuncStruct = typeSymbol.IsReferenceType is false,
             MethodFuncName = endpointMethod.Name,
+            SerializerOptionsPropertyFuncName = typeSymbol.GetSerializerOptionsPropertyFuncName(),
             Method = GetMethodValue(endpointAttributeData.ConstructorArguments[0].Value),
             Route = endpointAttributeData.ConstructorArguments[1].Value?.ToString(),
             Summary = endpointAttributeData.GetAttributePropertyValue("Summary")?.ToString(),
@@ -102,6 +103,34 @@ internal static partial class SourceGeneratorExtensions
             var description = tagAttribute.GetAttributePropertyValue("Description")?.ToString();
             yield return new(name: name!, description: description);
         }
+    }
+
+    private static string? GetSerializerOptionsPropertyFuncName(this INamedTypeSymbol typeSymbol)
+    {
+        return typeSymbol.GetMembers()
+            .OfType<IPropertySymbol>()
+            .Where(IsReturnTypeJsonSerializerOptions)
+            .Where(IsGetterAllowed)
+            .Where(IsStatic)
+            .Where(IsPublicOrInternal)
+            .FirstOrDefault()
+            ?.Name;
+
+        static bool IsReturnTypeJsonSerializerOptions(IPropertySymbol property)
+            =>
+            property.Type.IsType("System.Text.Json", "JsonSerializerOptions");
+
+        static bool IsGetterAllowed(IPropertySymbol property)
+            =>
+            property.GetMethod is not null;
+
+        static bool IsStatic(IPropertySymbol property)
+            =>
+            property.IsStatic;
+
+        static bool IsPublicOrInternal(IPropertySymbol property)
+            =>
+            property.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
     }
 
     private static string GetMethodValue(object? source)

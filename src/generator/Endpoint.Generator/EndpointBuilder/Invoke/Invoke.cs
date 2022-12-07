@@ -38,7 +38,7 @@ partial class EndpointBuilder
         .AppendMapRequestFunction(type)
         .AppendEmptyLine()
         .AppendCodeLine(
-            $"private static EndpointResponse MapSuccess({type.GetResponseTypeName()} success)")
+            $"private EndpointResponse MapSuccess({type.GetResponseTypeName()} success)")
         .BeginCodeBlock()
         .AppendMapSuccessBlock(type)
         .EndCodeBlock()
