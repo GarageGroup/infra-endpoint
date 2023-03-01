@@ -552,7 +552,7 @@ partial class EndpointBuilder
             var typeData = type.GetDisplayedData();
             builder.AddUsings(typeData.AllNamespaces);
 
-            if (type.GetEnumUnderlyingTypeOrDefault() is null)
+            if (type.GetEnumUnderlyingTypeOrDefault() is not null)
             {
                 return "EndpointParser.Parse" + nullableValue + $"Enum<{typeData.DisplayedTypeName}>";
             }
