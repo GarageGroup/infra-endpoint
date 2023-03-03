@@ -29,10 +29,13 @@ partial class EndpointBuilder
         .AppendCodeLine(
             $"method: {type.GetMethodValue()},",
             $"route: {type.Route.ToStringValueOrEmpty()},",
-            $"summary: {type.Summary.ToStringValueOrDefault()},",
-            $"description: {type.Description.ToStringValueOrDefault()},",
+            "summary: default,",
+            "description: default,",
             "operation: new()")
         .BeginCodeBlock()
+        .AppendCodeLine(
+            $"Summary = {type.Summary.ToStringValueOrDefault()},",
+            $"Description = {type.Description.ToStringValueOrDefault()},")
         .AppendTags(type)
         .AppendOperationParameters(type)
         .AppendRequestBody(type)
@@ -110,7 +113,8 @@ partial class EndpointBuilder
                 .AppendCodeLine($"Required = {parameter.Required.ToStringValue()},")
                 .AppendCodeLine($"In = ParameterLocation.{parameter.Location},")
                 .AppendCodeLine($"Name = {parameter.Name.ToStringValueOrEmpty()},")
-                .AppendCodeLine($"Schema = {parameter.SchemaFunction}");
+                .AppendCodeLine($"Schema = {parameter.SchemaFunction},")
+                .AppendCodeLine($"Description = {parameter.Description.ToStringValueOrDefault()}");
 
             if (i < parameterDescriptions.Length - 1)
             {
@@ -161,21 +165,41 @@ partial class EndpointBuilder
             return sourceBuilder;
         }
 
-        var successStatusCodes = type.GetSuccessStatusCodes();
-        if (successStatusCodes.Count is 0)
+        var successData = type.GetSuccessData();
+        if (successData.Count is 0)
         {
-            successStatusCodes = new[] { type.GetDefaultStatusCode() };
+            successData = new[] { new SuccessData(type.GetDefaultStatusCode(), null) };
+        }
+
+        var successDataDictionary = new Dictionary<string, SuccessData>();
+        foreach (var success in successData)
+        {
+            var statusCode = success.StatusCode ?? type.GetDefaultStatusCode();
+            if (successDataDictionary.ContainsKey(statusCode))
+            {
+                continue;
+            }
+
+            successDataDictionary[statusCode] = success;
         }
 
         var responseBodyType = type.GetResponseBodyType();
         var responseJsonProperties = type.GetResponseJsonBodyProperties();
 
-        foreach (var successStatusCode in successStatusCodes)
+        var successes = successDataDictionary.Select(GetValue).ToArray();
+        foreach (var success in successes)
         {
+            var statusCode = success.StatusCode ?? type.GetDefaultStatusCode();
+            var descriptionValue = string.IsNullOrEmpty(success.Description) switch
+            {
+                true => GetStatusDescription(statusCode).ToStringValueOrDefault(),
+                _ => success.Description.ToStringValueOrDefault()
+            };
+
             sourceBuilder
-                .AppendCodeLine($"[{successStatusCode.ToStringValueOrEmpty()}] = new()")
+                .AppendCodeLine($"[{statusCode.ToStringValueOrEmpty()}] = new()")
                 .BeginCodeBlock()
-                .AppendCodeLine($"Description = {GetStatusDescription(successStatusCode).ToStringValueOrDefault()},");
+                .AppendCodeLine($"Description = {descriptionValue},");
 
             if (responseBodyType is not null)
             {
@@ -190,6 +214,10 @@ partial class EndpointBuilder
         }
 
         return sourceBuilder;
+
+        static SuccessData GetValue(KeyValuePair<string, SuccessData> kv)
+            =>
+            kv.Value;
     }
 
     private static SourceBuilder AppendFailureResponsesBody(this SourceBuilder sourceBuilder, EndpointTypeDescription type)
@@ -199,30 +227,54 @@ partial class EndpointBuilder
             return sourceBuilder;
         }
 
-        var failureCodes = type.FailureCodeType.GetProblemData().OrderBy(GetStatusCode).Select(GetStatusCode).Distinct().ToArray();
-        if (failureCodes.Length is not > 0)
+        var problemData = type.FailureCodeType.GetProblemData().OrderBy(GetStatusCode).ToArray();
+        if (problemData.Length is not > 0)
         {
             return sourceBuilder;
         }
 
-        for (var i = 0; i < failureCodes.Length; i++)
+        var problemDataDictionary = new Dictionary<string, ProblemData>();
+        foreach (var problem in problemData)
         {
-            var failureCode = failureCodes[i];
-            var afterSymbol = i < failureCodes.Length - 1 ? "," : null;
+            var problemCode = problem.StatusCode ?? string.Empty;
+            if (problemDataDictionary.ContainsKey(problemCode))
+            {
+                continue;
+            }
+
+            problemDataDictionary[problemCode] = problem;
+        }
+
+        var problems = problemDataDictionary.Select(GetValue).ToArray();
+        for (var i = 0; i < problems.Length; i++)
+        {
+            var problem = problems[i];
+            var afterSymbol = i < problems.Length - 1 ? "," : null;
+
+            var failureCode = problem.StatusCode;
+            var descriptionValue = string.IsNullOrEmpty(problem.Description) switch
+            {
+                true => GetStatusDescription(failureCode).ToStringValueOrDefault(),
+                _ => problem.Description.ToStringValueOrDefault()
+            };
 
             sourceBuilder
                 .AppendCodeLine($"[{failureCode.ToStringValueOrEmpty()}] = new()")
                 .BeginCodeBlock()
-                .AppendCodeLine($"Description = {GetStatusDescription(failureCode).ToStringValueOrDefault()},")
+                .AppendCodeLine($"Description = {descriptionValue},")
                 .AppendCodeLine("Content = CreateProblemContent()")
                 .EndCodeBlock(afterSymbol);
         }
 
         return sourceBuilder;
 
-        static string? GetStatusCode(ProblemData problemData)
+        static string? GetStatusCode(ProblemData problem)
             =>
-            problemData.StatusCode;
+            problem.StatusCode;
+
+        static ProblemData GetValue(KeyValuePair<string, ProblemData> kv)
+            =>
+            kv.Value;
     }
 
     private static SourceBuilder AppendSchemasBody(this SourceBuilder sourceBuilder, EndpointTypeDescription type)
@@ -238,9 +290,11 @@ partial class EndpointBuilder
     private static SourceBuilder AppendContent(this SourceBuilder sourceBuilder, BodyTypeDescription bodyType)
     {
         var usings = new List<string>();
-        var exampleValue = bodyType.PropertySymbol.GetExampleValue();
 
-        var requestBodySchema = bodyType.BodyType.GetSimpleSchemaFunction(usings, exampleValue);
+        var exampleValue = bodyType.PropertySymbol.GetExampleValue();
+        var description = bodyType.PropertySymbol.GetDescriptionValue();
+
+        var requestBodySchema = bodyType.BodyType.GetSimpleSchemaFunction(usings, exampleValue, description);
         sourceBuilder.AddUsings(usings);
 
         if (string.IsNullOrEmpty(requestBodySchema) is false)
@@ -248,7 +302,7 @@ partial class EndpointBuilder
             return sourceBuilder.AppendCodeLine($"Content = {requestBodySchema}.CreateContent({bodyType.ContentType.ToStringValueOrEmpty()})");
         }
 
-        return sourceBuilder.AppendSchema("Content", bodyType.BodyType, 0, exampleValue).AppendCodeLine(
+        return sourceBuilder.AppendSchema("Content", bodyType.BodyType, 0, exampleValue, description).AppendCodeLine(
             $".CreateContent({bodyType.ContentType.ToStringValueOrEmpty()})");
     }
 
@@ -265,7 +319,11 @@ partial class EndpointBuilder
         foreach (var property in jsonProperties)
         {
             var propertyName = "[" + property.JsonPropertyName.ToStringValueOrEmpty() + "]";
-            sourceBuilder.AppendSchema(propertyName, property.PropertyType, 1, property.PropertySymbol.GetExampleValue());
+
+            var exampleValue = property.PropertySymbol.GetExampleValue();
+            var description = property.PropertySymbol.GetDescriptionValue();
+
+            sourceBuilder.AppendSchema(propertyName, property.PropertyType, 1, exampleValue, description);
         }
 
         return sourceBuilder
@@ -274,12 +332,13 @@ partial class EndpointBuilder
             .AppendCodeLine($".CreateContent(\"application/json\")");
     }
 
-    private static SourceBuilder AppendSchema(this SourceBuilder builder, string parameterName, ITypeSymbol type, int level, string? exampleValue)
+    private static SourceBuilder AppendSchema(
+        this SourceBuilder builder, string parameterName, ITypeSymbol type, int level, string? exampleValue, string? description)
     {
         if (level > 0)
         {
             var usings = new List<string>();
-            var simpleSchemaFunction = type.GetSimpleSchemaFunction(usings, exampleValue);
+            var simpleSchemaFunction = type.GetSimpleSchemaFunction(usings, exampleValue, description);
             builder.AddUsings(usings);
 
             if (string.IsNullOrEmpty(simpleSchemaFunction) is false)
@@ -307,7 +366,8 @@ partial class EndpointBuilder
         var collectionType = type.GetCollectionTypeOrDefault();
         if (collectionType is not null)
         {
-            return builder.AppendCodeLine("Type = \"array\",").AppendSchema("Items", collectionType, level, exampleValue).EndCodeBlock(afterSymbol);
+            return builder.AppendCodeLine("Type = \"array\",")
+                .AppendSchema("Items", collectionType, level, exampleValue, description).EndCodeBlock(afterSymbol);
         }
 
         builder.AppendCodeLine("Type = \"object\",").AppendCodeLine("Properties = new Dictionary<string, OpenApiSchema>").BeginCodeBlock();
@@ -315,7 +375,11 @@ partial class EndpointBuilder
         foreach (var jsonProperty in type.GetJsonProperties())
         {
             var propertyName = "[" + jsonProperty.GetJsonPropertyName().ToStringValueOrEmpty() + "]";
-            builder.AppendSchema(propertyName, jsonProperty.Type, level, jsonProperty.GetExampleValue());
+
+            var jsonExampleValue = jsonProperty.GetExampleValue();
+            var jsonDescription = jsonProperty.GetDescriptionValue();
+
+            builder.AppendSchema(propertyName, jsonProperty.Type, level, jsonExampleValue, jsonDescription);
         }
 
         return builder.EndCodeBlock().EndCodeBlock(afterSymbol);

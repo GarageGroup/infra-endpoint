@@ -11,4 +11,6 @@ public sealed class RouteInAttribute : Attribute
         Name = string.IsNullOrEmpty(name) ? null : name;
 
     public string? Name { get; }
+
+    public string? Description { get; set; }
 }

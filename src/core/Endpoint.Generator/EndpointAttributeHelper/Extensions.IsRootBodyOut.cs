@@ -6,5 +6,5 @@ partial class EndpointAttributeHelper
 {
     internal static bool IsRootBodyOutAttribute(AttributeData attributeData)
         =>
-        IsEndpointAttribute(attributeData, RootBodyOutAttribute);
+        InnerIsEndpointAttribute(attributeData, RootBodyOutAttribute);
 }

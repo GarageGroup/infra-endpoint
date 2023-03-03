@@ -44,8 +44,8 @@ internal static partial class SourceGeneratorExtensions
             throw new InvalidOperationException($"An endpoint method was not found in the type {typeSymbol.Name}");
         }
 
-        var resultType = endpointMethod.ReturnType.GetTaskType() as INamedTypeSymbol;
-        var failureType = resultType?.TypeArguments[1] as INamedTypeSymbol;
+        var methodRetrunType = endpointMethod.ReturnType.GetTaskType();
+        var failureType = methodRetrunType.IsResultType() ? methodRetrunType?.TypeArguments[1] as INamedTypeSymbol : null;
 
         var tags = typeSymbol.GetEndpointTags().ToArray();
         if (tags.Length is 0)
@@ -64,13 +64,13 @@ internal static partial class SourceGeneratorExtensions
             IsTypeFuncStruct = typeSymbol.IsReferenceType is false,
             MethodFuncName = endpointMethod.Name,
             SerializerOptionsPropertyFuncName = typeSymbol.GetSerializerOptionsPropertyFuncName(),
-            MethodName = GetMethodName(endpointAttributeData.ConstructorArguments[0].Value),//EndpointMethod.
+            MethodName = GetMethodName(endpointAttributeData.ConstructorArguments[0].Value),
             Route = endpointAttributeData.ConstructorArguments[1].Value?.ToString(),
             Summary = endpointAttributeData.GetAttributePropertyValue("Summary")?.ToString(),
             Description = endpointAttributeData.GetAttributePropertyValue("Description")?.ToString(),
             Tags = tags,
             RequestType = endpointMethod.Parameters[0].Type,
-            ResponseType = resultType?.TypeArguments[0],
+            ResponseType = methodRetrunType.IsResultType() ? methodRetrunType?.TypeArguments[0] : methodRetrunType,
             FailureCodeType = failureType?.TypeArguments[0]
         };
 

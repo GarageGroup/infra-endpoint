@@ -6,5 +6,5 @@ partial class EndpointAttributeHelper
 {
     internal static bool IsClaimInAttribute(AttributeData attributeData)
         =>
-        IsEndpointAttribute(attributeData, ClaimInAttribute);
+        InnerIsEndpointAttribute(attributeData, ClaimInAttribute);
 }

@@ -10,4 +10,6 @@ public sealed class SuccessAttribute : Attribute
         StatusCode = statusCode;
 
     public SuccessStatusCode StatusCode { get; }
+
+    public string? Description { get; set; }
 }

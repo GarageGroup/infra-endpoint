@@ -6,5 +6,5 @@ partial class EndpointAttributeHelper
 {
     internal static bool IsRouteInAttribute(AttributeData attributeData)
         =>
-        IsEndpointAttribute(attributeData, RouteInAttribute);
+        InnerIsEndpointAttribute(attributeData, RouteInAttribute);
 }

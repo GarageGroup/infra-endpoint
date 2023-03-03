@@ -6,5 +6,5 @@ partial class EndpointAttributeHelper
 {
     internal static bool IsJsonBodyOutAttribute(AttributeData attributeData)
         =>
-        IsEndpointAttribute(attributeData, JsonBodyOutAttribute);
+        InnerIsEndpointAttribute(attributeData, JsonBodyOutAttribute);
 }

@@ -5,13 +5,14 @@ namespace GGroupp.Infra.Endpoint;
 
 partial class EndpointMetadataHelper
 {
-    public static OpenApiSchema CreateDateSchema(bool nullable, IOpenApiAny? example = null)
+    public static OpenApiSchema CreateDateSchema(bool nullable, IOpenApiAny? example = null, string? description = null)
         =>
         new()
         {
             Type = "string",
             Format = "date",
             Nullable = nullable,
-            Example = example
+            Example = example,
+            Description = description
         };
 }

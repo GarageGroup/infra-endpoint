@@ -6,5 +6,5 @@ partial class EndpointAttributeHelper
 {
     internal static bool IsSuccessAttribute(AttributeData attributeData)
         =>
-        IsEndpointAttribute(attributeData, SuccessAttribute);
+        InnerIsEndpointAttribute(attributeData, SuccessAttribute);
 }

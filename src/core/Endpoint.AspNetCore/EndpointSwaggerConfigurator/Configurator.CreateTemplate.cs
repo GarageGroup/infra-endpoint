@@ -26,6 +26,12 @@ partial class EndpointSwaggerConfigurator
             return;
         }
 
+        if (metadata.Operation.Tags?.Count > 0)
+        {
+            document.Tags ??= new List<OpenApiTag>();
+            document.Tags.AddTags(metadata.Operation.Tags);
+        }
+
         var paths = document.Paths ?? new OpenApiPaths();
         paths = paths.InsertPaths(metadata);
 
@@ -41,6 +47,18 @@ partial class EndpointSwaggerConfigurator
 
         schemas.AddSchemas(metadata);
         document.Components.Schemas = schemas;
+    }
+
+    private static void AddTags(this IList<OpenApiTag> documentTags, IEnumerable<OpenApiTag> tags)
+    {
+        foreach (var tag in tags.Where(NotExisted))
+        {
+            documentTags.Add(tag);
+        }
+
+        bool NotExisted(OpenApiTag tag)
+            =>
+            documentTags.Any(t => string.Equals(t.Name, tag.Name, StringComparison.InvariantCultureIgnoreCase)) is false;
     }
 
     private static void AddSchemas(this Dictionary<string, OpenApiSchema> schemas, EndpointMetadata endpoint)
