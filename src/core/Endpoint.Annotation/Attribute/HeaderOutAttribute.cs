@@ -11,4 +11,6 @@ public sealed class HeaderOutAttribute : Attribute
         HeaderName = string.IsNullOrEmpty(headerName) ? null : headerName;
 
     public string? HeaderName { get; }
+
+    public string? Description { get; set; }
 }

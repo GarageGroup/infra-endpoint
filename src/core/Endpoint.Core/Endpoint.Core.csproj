@@ -8,11 +8,11 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GGroupp.Infra</RootNamespace>
     <AssemblyName>GGroupp.Infra.Endpoint.Core</AssemblyName>
-    <Version>0.7.0</Version>
+    <Version>0.7.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GGroupp.Infra.Endpoint.Annotation" Version="0.4.0" />
+    <PackageReference Include="GGroupp.Infra.Endpoint.Annotation" Version="0.4.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.OpenApi" Version="1.6.2" />
     <PackageReference Include="PrimeFuncPack.Core.Failure" Version="2.0.1" />
