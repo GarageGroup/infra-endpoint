@@ -10,13 +10,14 @@ namespace GGroupp.Infra;
 public readonly record struct JsonStringValue<TValue> : IOpenApiSchemaProvider, IEndpointTypeParser<JsonStringValue<TValue>>
     where TValue : struct
 {
-    public static OpenApiSchema GetSchema(bool nullable, IOpenApiAny? example = null)
+    public static OpenApiSchema GetSchema(bool nullable, IOpenApiAny? example = null, string? description = null)
         =>
         new()
         {
             Type = "string",
             Nullable = true,
-            Example = example ?? new OpenApiString("{}")
+            Example = example ?? new OpenApiString("{}"),
+            Description = description
         };
 
     public static Result<JsonStringValue<TValue>, Failure<Unit>> Parse(string? source)

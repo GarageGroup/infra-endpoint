@@ -30,7 +30,9 @@ internal static partial class EndpointAttributeHelper
 
     private const string StringExampleAttribute = "StringExampleAttribute";
 
-    private static bool IsEndpointAttribute(AttributeData attributeData, string attributeTypeName)
+    private const string SwaggerDescriptionAttribute = "SwaggerDescriptionAttribute";
+
+    private static bool InnerIsEndpointAttribute(AttributeData attributeData, string attributeTypeName)
         =>
         attributeData.AttributeClass?.IsType(AttributeNamespace, attributeTypeName) is true;
 }

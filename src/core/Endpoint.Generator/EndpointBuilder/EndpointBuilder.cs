@@ -217,7 +217,8 @@ internal static partial class EndpointBuilder
                     statusFieldName: enumField.Name,
                     statusCode: problemAttribute?.GetAttributeValue(0, "StatusCode")?.ToString(),
                     detail: problemAttribute?.GetAttributeValue(1, "Detail")?.ToString(),
-                    title: problemAttribute?.GetAttributeValue(2, "Title")?.ToString());
+                    title: problemAttribute?.GetAttributeValue(2, "Title")?.ToString(),
+                    description: problemAttribute?.GetAttributePropertyValue("Description")?.ToString());
             }
         }
 

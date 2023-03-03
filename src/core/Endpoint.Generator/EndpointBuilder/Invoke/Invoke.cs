@@ -42,12 +42,7 @@ partial class EndpointBuilder
         .BeginCodeBlock()
         .AppendMapSuccessBlock(type)
         .EndCodeBlock()
-        .AppendEmptyLine()
-        .AppendCodeLine(
-            $"private EndpointResponse MapFailure(Failure<{type.GetFailureCodeTypeName()}> failure)")
-        .BeginCodeBlock()
-        .AppendMapFailureBlock(type)
-        .EndCodeBlock()
+        .AppendMapFailureMetod(type)
         .EndCodeBlock()
         .Build();
 
@@ -67,7 +62,7 @@ partial class EndpointBuilder
                 "var inputResult = await MapRequestAsync(request, cancellationToken).ConfigureAwait(false);");
         }
 
-        return sourceBuilder
+        _ = sourceBuilder
             .AppendCodeLine("if (inputResult.IsFailure)")
             .BeginCodeBlock()
             .AppendCodeLine("var inputFailure = inputResult.FailureOrThrow();")
@@ -78,8 +73,14 @@ partial class EndpointBuilder
             .AppendEmptyLine()
             .AppendCodeLine("var input = inputResult.SuccessOrThrow();")
             .AppendCodeLine($"var endpointResult = await endpointFunc.{type.GetMethodFuncName()}(input, cancellationToken).ConfigureAwait(false);")
-            .AppendEmptyLine()
-            .AppendCodeLine("return endpointResult.Fold(MapSuccess, MapFailure);");
+            .AppendEmptyLine();
+
+        if (type.FailureCodeType is null)
+        {
+            return sourceBuilder.AppendCodeLine("return MapSuccess(endpointResult);");
+        }
+
+        return sourceBuilder.AppendCodeLine("return endpointResult.Fold(MapSuccess, MapFailure);");
     }
 
     private static SourceBuilder AppendMapRequestFunction(this SourceBuilder sourceBuilder, EndpointTypeDescription type)
@@ -466,6 +467,22 @@ partial class EndpointBuilder
         }
 
         return sourceBuilder.AppendCodeLine("_ => default").EndCodeBlock(',');
+    }
+
+    private static SourceBuilder AppendMapFailureMetod(this SourceBuilder sourceBuilder, EndpointTypeDescription type)
+    {
+        if (type.FailureCodeType is null)
+        {
+            return sourceBuilder;
+        }
+
+        return sourceBuilder
+            .AppendEmptyLine()
+            .AppendCodeLine(
+                $"private EndpointResponse MapFailure(Failure<{type.GetFailureCodeTypeName()}> failure)")
+            .BeginCodeBlock()
+            .AppendMapFailureBlock(type)
+            .EndCodeBlock();
     }
 
     private static SourceBuilder AppendMapFailureBlock(this SourceBuilder sourceBuilder, EndpointTypeDescription type)

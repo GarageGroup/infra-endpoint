@@ -8,11 +8,11 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GGroupp.Infra</RootNamespace>
     <AssemblyName>GGroupp.Infra.Endpoint.Schema.JsonStringValue</AssemblyName>
-    <Version>0.1.1</Version>
+    <Version>0.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GGroupp.Infra.Endpoint.SchemaProvider" Version="0.1.1" />
+    <PackageReference Include="GGroupp.Infra.Endpoint.SchemaProvider" Version="0.2.0" />
     <PackageReference Include="GGroupp.Infra.Endpoint.TypeParser" Version="0.1.1" />
   </ItemGroup>
 

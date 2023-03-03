@@ -58,7 +58,7 @@ internal static partial class SourceGeneratorExtensions
             return false;
         }
 
-        if (methodSymbol.Parameters.Length != 2)
+        if (methodSymbol.Parameters.Length is not 2)
         {
             return false;
         }
@@ -73,10 +73,10 @@ internal static partial class SourceGeneratorExtensions
             return false;
         }
 
-        return methodSymbol.ReturnType.GetTaskType()?.IsResultType() is true;
+        return methodSymbol.ReturnType.GetTaskType() is not null;
     }
 
-    private static ITypeSymbol? GetTaskType(this ITypeSymbol typeSymbol)
+    private static INamedTypeSymbol? GetTaskType(this ITypeSymbol typeSymbol)
     {
         if (typeSymbol.IsAnyType("System.Threading.Tasks", "Task", "ValueTask") is false)
         {
@@ -93,11 +93,16 @@ internal static partial class SourceGeneratorExtensions
             return null;
         }
 
-        return namedTypeSymbol.TypeArguments[0];
+        return namedTypeSymbol.TypeArguments[0] as INamedTypeSymbol;
     }
 
-    private static bool IsResultType(this ITypeSymbol typeSymbol)
+    private static bool IsResultType(this ITypeSymbol? typeSymbol)
     {
+        if (typeSymbol is null)
+        {
+            return false;
+        }
+
         if (typeSymbol.IsSystemType("Result") is false)
         {
             return false;

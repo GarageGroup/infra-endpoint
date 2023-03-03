@@ -30,10 +30,11 @@ partial class EndpointBuilder
         var isNullable = parameterSymbol.Type.IsNullable() || parameterSymbol.NullableAnnotation is NullableAnnotation.Annotated;
 
         var exmapleValue = parameterSymbol.GetExampleValue();
+        var description = parameterSymbol.GetDescriptionValue();
         var parameterType = parameterSymbol.Type;
     
-        var schemaFunction = parameterType.GetSimpleSchemaFunction(usings, exmapleValue)
-            ?? parameterType.GetArrayOrDefaultSchemaFunction(usings, exmapleValue);
+        var schemaFunction = parameterType.GetSimpleSchemaFunction(usings, exmapleValue, description)
+            ?? parameterType.GetArrayOrDefaultSchemaFunction(usings, exmapleValue, description);
 
         if (parameterSymbol.GetAttributes().FirstOrDefault(IsRouteInAttribute) is AttributeData routeInAttribute)
         {
@@ -43,7 +44,8 @@ partial class EndpointBuilder
                 required: true,
                 location: "Path",
                 name: string.IsNullOrWhiteSpace(name) ? parameterName : name!,
-                schemaFunction: schemaFunction);
+                schemaFunction: schemaFunction,
+                description: routeInAttribute.GetAttributePropertyValue("Description")?.ToString());
         }
         
         if (parameterSymbol.GetAttributes().FirstOrDefault(IsQueryInAttribute) is AttributeData queryInAttribute)
@@ -54,7 +56,8 @@ partial class EndpointBuilder
                 required: isNullable is false,
                 location: "Query",
                 name: string.IsNullOrWhiteSpace(name) ? parameterName : name!,
-                schemaFunction: schemaFunction);
+                schemaFunction: schemaFunction,
+                description: queryInAttribute.GetAttributePropertyValue("Description")?.ToString());
         }
 
         if (parameterSymbol.GetAttributes().FirstOrDefault(IsHeaderInAttribute) is AttributeData headerInAttribute)
@@ -65,37 +68,41 @@ partial class EndpointBuilder
                 required: isNullable is false,
                 location: "Header",
                 name: string.IsNullOrWhiteSpace(name) ? parameterName : name!,
-                schemaFunction: schemaFunction);
+                schemaFunction: schemaFunction,
+                description: headerInAttribute.GetAttributePropertyValue("Description")?.ToString());
         }
 
         return new(
             required: true,
             location: "Query",
             name: parameterName,
-            schemaFunction: schemaFunction);
+            schemaFunction: schemaFunction,
+            description: null);
     }
 
-    private static string GetArrayOrDefaultSchemaFunction(this ITypeSymbol typeSymbol, List<string> usings, string? exmapleValue)
+    private static string GetArrayOrDefaultSchemaFunction(
+        this ITypeSymbol typeSymbol, List<string> usings, string? exmapleValue, string? description)
     {
         var isNullable = typeSymbol.IsNullable();
         var collectionType = typeSymbol.GetCollectionTypeOrDefault();
 
         if (collectionType is null)
         {
-            return BuildSchemaFunction($"CreateDefaultSchema", usings, exmapleValue, isNullable);
+            return BuildSchemaFunction($"CreateDefaultSchema", usings, exmapleValue, description, isNullable);
         }
 
-        var collectionTypeSchemaFunction = collectionType.GetSimpleSchemaFunction(usings, exmapleValue);
+        var collectionTypeSchemaFunction = collectionType.GetSimpleSchemaFunction(usings, exmapleValue, description);
         if (string.IsNullOrEmpty(collectionTypeSchemaFunction) is false)
         {
             return $"CreateArraySchema({isNullable.ToStringValue()}, {collectionTypeSchemaFunction})";
         }
 
-        var defaultSchemaFunction = BuildSchemaFunction($"CreateDefaultSchema", usings, exmapleValue, isNullable);
+        var defaultSchemaFunction = BuildSchemaFunction($"CreateDefaultSchema", usings, exmapleValue, description, isNullable);
         return $"CreateArraySchema({isNullable.ToStringValue()}, {defaultSchemaFunction})";
     }
 
-    private static string? GetSimpleSchemaFunction(this ITypeSymbol typeSymbol, List<string> usings, string? exmapleValue, bool? nullable = null)
+    private static string? GetSimpleSchemaFunction(
+        this ITypeSymbol typeSymbol, List<string> usings, string? exmapleValue, string? description, bool? nullable = null)
     {
         var isNullable = nullable is not null ? nullable.Value : typeSymbol.IsNullable();
         var type = typeSymbol.GetNullableStructType() ?? typeSymbol;
@@ -162,7 +169,7 @@ partial class EndpointBuilder
 
         if (type.GetEnumUnderlyingTypeOrDefault() is INamedTypeSymbol enumUnderlyingType)
         {
-            return enumUnderlyingType.GetSimpleSchemaFunction(usings, exmapleValue, isNullable);
+            return enumUnderlyingType.GetSimpleSchemaFunction(usings, exmapleValue, description, isNullable);
         }
 
         if (type.IsStreamType())
@@ -187,18 +194,27 @@ partial class EndpointBuilder
 
         string InnerBuildSchemaFunction(string functionName)
             =>
-            BuildSchemaFunction(functionName, usings, exmapleValue, isNullable);
+            BuildSchemaFunction(functionName, usings, exmapleValue, description, isNullable);
     }
 
-    private static string BuildSchemaFunction(string functionName, List<string> usings, string? exmapleValue, bool isNullable)
+    private static string BuildSchemaFunction(
+        string functionName, List<string> usings, string? exmapleValue, string? description, bool isNullable)
     {
-        if (string.IsNullOrEmpty(exmapleValue))
+        if (string.IsNullOrEmpty(exmapleValue) is false)
         {
-            return $"{functionName}({isNullable.ToStringValue()})";
+            usings.Add("Microsoft.OpenApi.Any");
+        }
+        else
+        {
+            exmapleValue = "default";
         }
 
-        usings.Add("Microsoft.OpenApi.Any");
-        return $"{functionName}({isNullable.ToStringValue()}, {exmapleValue})";
+        if (string.IsNullOrEmpty(description))
+        {
+            description = "default";
+        }
+
+        return $"{functionName}({isNullable.ToStringValue()}, example: {exmapleValue}, description: {description})";
     }
 
     private static string? GetExampleValue(this ISymbol symbol)
@@ -213,32 +229,42 @@ partial class EndpointBuilder
         return $"new OpenApiString({value.ToStringValueOrEmpty()})";
     }
 
-    private static IReadOnlyCollection<string> GetSuccessStatusCodes(this EndpointTypeDescription type)
+    private static string? GetDescriptionValue(this ISymbol symbol)
+    {
+        var swaggerDescriptionAttribute = symbol.GetAttributes().FirstOrDefault(IsSwaggerDescriptionAttribute);
+        if (swaggerDescriptionAttribute is null)
+        {
+            return null;
+        }
+
+        var value = swaggerDescriptionAttribute.GetAttributeValue(0)?.ToString();
+        return value.ToStringValueOrDefault();
+    }
+
+    private static IReadOnlyCollection<SuccessData> GetSuccessData(this EndpointTypeDescription type)
     {
         var successStatusType = type.GetSuccessStatusCodeType();
         if (successStatusType is null)
         {
-            var successStatusCode = GetSuccessStatusCode(type.ResponseType?.GetAttributes().FirstOrDefault(IsSuccessAttribute));
-            if (string.IsNullOrEmpty(successStatusCode) is false)
+            var successData = GetSuccessData(type.ResponseType?.GetAttributes().FirstOrDefault(IsSuccessAttribute));
+            if (successData is not null)
             {
-                return new[] { successStatusCode! };
+                return new[] { successData };
             }
 
-            return Array.Empty<string>();
+            return Array.Empty<SuccessData>();
         }
 
-        return successStatusType.GetEnumFields().Select(GetSuccessAttribute).Select(GetSuccessStatusCode).Where(NotEmpty).Distinct().ToArray()!;
+        return successStatusType.GetEnumFields().Select(GetSuccessAttribute).Select(GetSuccessData).ToArray();
 
         static AttributeData? GetSuccessAttribute(ISymbol symbol)
             =>
             symbol.GetAttributes().FirstOrDefault(IsSuccessAttribute);
 
-        static bool NotEmpty(string? statusCode)
+        static SuccessData GetSuccessData(AttributeData? attributeData)
             =>
-            string.IsNullOrEmpty(statusCode) is false;
-
-        static string? GetSuccessStatusCode(AttributeData? attributeData)
-            =>
-            attributeData?.GetAttributeValue(0, "StatusCode")?.ToString();
+            new(
+                statusCode: attributeData?.GetAttributeValue(0, "StatusCode")?.ToString(),
+                description: attributeData?.GetAttributePropertyValue("Description")?.ToString());
     }
 }

@@ -5,13 +5,14 @@ namespace GGroupp.Infra.Endpoint;
 
 partial class EndpointMetadataHelper
 {
-    public static OpenApiSchema CreateInt64Schema(bool nullable, IOpenApiAny? example = null)
+    public static OpenApiSchema CreateInt64Schema(bool nullable, IOpenApiAny? example = null, string? description = null)
         =>
         new()
         {
             Type = "integer",
             Format = "int64",
             Nullable = nullable,
-            Example = example
+            Example = example,
+            Description = description
         };
 }

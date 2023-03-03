@@ -4,7 +4,7 @@ namespace GGroupp.Infra.Endpoint;
 
 partial class EndpointMetadataHelper
 {
-    public static OpenApiSchema CreateReferenceSchema(bool nullable, string typeName)
+    public static OpenApiSchema CreateReferenceSchema(bool nullable, string typeName, string? description = null)
         =>
         new()
         {
@@ -13,6 +13,7 @@ partial class EndpointMetadataHelper
             {
                 Type = ReferenceType.Schema,
                 Id = typeName
-            }
+            },
+            Description = description
         };
 }

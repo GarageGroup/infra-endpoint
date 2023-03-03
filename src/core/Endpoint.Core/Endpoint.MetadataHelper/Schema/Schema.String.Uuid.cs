@@ -5,13 +5,14 @@ namespace GGroupp.Infra.Endpoint;
 
 partial class EndpointMetadataHelper
 {
-    public static OpenApiSchema CreateUuidSchema(bool nullable, IOpenApiAny? example = null)
+    public static OpenApiSchema CreateUuidSchema(bool nullable, IOpenApiAny? example = null, string? description = null)
         =>
         new()
         {
             Type = "string",
             Format = "uuid",
             Nullable = nullable,
-            Example = example
+            Example = example,
+            Description = description
         };
 }

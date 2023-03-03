@@ -8,14 +8,15 @@ namespace GGroupp.Infra;
 [JsonConverter(typeof(Base64StringJsonConverter))]
 public readonly record struct Base64String : IOpenApiSchemaProvider
 {
-    public static OpenApiSchema GetSchema(bool nullable, IOpenApiAny? example = null)
+    public static OpenApiSchema GetSchema(bool nullable, IOpenApiAny? example = null, string? description = null)
         =>
         new()
         {
             Nullable = nullable,
             Type = "string",
             Format = "byte",
-            Example = example ?? new OpenApiString("U3dhZ2dlciByb2Nrcw==")
+            Example = example ?? new OpenApiString("U3dhZ2dlciByb2Nrcw=="),
+            Description = description
         };
 
     private readonly string? value;

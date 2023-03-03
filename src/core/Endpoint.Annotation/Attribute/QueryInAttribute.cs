@@ -11,4 +11,6 @@ public sealed class QueryInAttribute : Attribute
         ParameterName = string.IsNullOrEmpty(parameterName) ? null : parameterName;
 
     public string? ParameterName { get; }
+
+    public string? Description { get; set; }
 }

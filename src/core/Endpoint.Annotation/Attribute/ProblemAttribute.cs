@@ -20,4 +20,6 @@ public sealed class ProblemAttribute : Attribute
     public string Detail { get; }
 
     public string Title { get; }
+
+    public string? Description { get; set; }
 }
