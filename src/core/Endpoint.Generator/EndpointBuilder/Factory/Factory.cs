@@ -30,7 +30,7 @@ partial class EndpointBuilder
         .EndLambda()
         .AppendEmptyLine()
         .AppendCodeLine(
-            "private static readonly JsonSerializerOptions DefaultSerializerOptions = new(JsonSerializerDefaults.Web);")
+            "private static readonly JsonSerializerOptions DefaultSerializerOptions = EndpointDeserializer.CreateDeafultOptions();")
         .AppendEmptyLine()
         .AppendCodeLine(
             $"private readonly {type.TypeFuncName} endpointFunc;")

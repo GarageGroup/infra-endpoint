@@ -167,9 +167,12 @@ partial class EndpointBuilder
             return InnerBuildSchemaFunction("CreateNumberSchema");
         }
 
-        if (type.GetEnumUnderlyingTypeOrDefault() is INamedTypeSymbol enumUnderlyingType)
+        if (type.GetEnumUnderlyingTypeOrDefault() is not null)
         {
-            return enumUnderlyingType.GetSimpleSchemaFunction(usings, exmapleValue, description, isNullable);
+            var typeData = type.GetDisplayedData();
+            usings.AddRange(typeData.AllNamespaces);
+
+            return InnerBuildSchemaFunction($"CreateEnumSchema<{typeData.DisplayedTypeName}>");
         }
 
         if (type.IsStreamType())
