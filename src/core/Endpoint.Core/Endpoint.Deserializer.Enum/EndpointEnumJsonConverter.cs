@@ -9,7 +9,12 @@ public sealed class EndpointEnumJsonConverter<T> : JsonConverter<T>
 {
     public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var text = reader.GetString();
+        var text = reader.TokenType switch
+        {
+            JsonTokenType.Number => reader.GetInt32().ToString(),
+            _ => reader.GetString()
+        };
+
         return EndpointParser.ParseEnum<T>(text).SuccessOrThrow(CreateParserException);
 
         JsonException CreateParserException()
