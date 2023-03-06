@@ -12,5 +12,5 @@ partial class EndpointParser
     public static Result<TEnum, Failure<Unit>> ParseEnum<TEnum>(string? source)
         where TEnum : struct, Enum
         =>
-        Enum.TryParse<TEnum>(source, false, out var result) ? result : CreateFailure(source, typeof(TEnum).Name);
+        Enum.TryParse<TEnum>(source, true, out var result) ? result : CreateFailure(source, typeof(TEnum).Name);
 }

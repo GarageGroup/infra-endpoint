@@ -29,7 +29,7 @@ partial class EndpointSwaggerConfigurator
         if (metadata.Operation.Tags?.Count > 0)
         {
             document.Tags ??= new List<OpenApiTag>();
-            document.Tags.AddTags(metadata.Operation.Tags);
+            document.Tags = document.Tags.InsertTags(metadata.Operation.Tags);
         }
 
         var paths = document.Paths ?? new OpenApiPaths();
@@ -49,16 +49,30 @@ partial class EndpointSwaggerConfigurator
         document.Components.Schemas = schemas;
     }
 
-    private static void AddTags(this IList<OpenApiTag> documentTags, IEnumerable<OpenApiTag> tags)
+    private static IList<OpenApiTag> InsertTags(this IList<OpenApiTag> documentTags, IEnumerable<OpenApiTag> tags)
     {
-        foreach (var tag in tags.Where(NotExisted))
+        if (tags.Any() is false)
         {
-            documentTags.Add(tag);
+            return documentTags;
         }
 
-        bool NotExisted(OpenApiTag tag)
+        var tagsDictionary = new Dictionary<string, OpenApiTag>(StringComparer.InvariantCultureIgnoreCase);
+        foreach (var tag in tags.Reverse().Concat(documentTags))
+        {
+            var key = GetTagKey(tag);
+            if (tagsDictionary.ContainsKey(key))
+            {
+                continue;
+            }
+
+            tagsDictionary[key] = tag;
+        }
+
+        return tagsDictionary.Values.ToList();
+
+        static string GetTagKey(OpenApiTag tag)
             =>
-            documentTags.Any(t => string.Equals(t.Name, tag.Name, StringComparison.InvariantCultureIgnoreCase)) is false;
+            tag.Name ?? string.Empty;
     }
 
     private static void AddSchemas(this Dictionary<string, OpenApiSchema> schemas, EndpointMetadata endpoint)

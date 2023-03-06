@@ -28,6 +28,6 @@ partial class EndpointDeserializer
 
         Result<TEnum, Failure<Unit>> Parse(string? source)
             =>
-            Enum.TryParse<TEnum>(source, false, out var value) ? value : CreateParserFailure(propertyName, typeof(TEnum).Name);
+            Enum.TryParse<TEnum>(source, true, out var value) ? value : CreateParserFailure(propertyName, typeof(TEnum).Name);
     }
 }
