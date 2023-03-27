@@ -13,6 +13,15 @@ public sealed class ProblemAttribute : Attribute
         StatusCode = statusCode;
         Detail = detail ?? string.Empty;
         Title = string.IsNullOrEmpty(title) ? DefaultTitle : title;
+        DetailFromFailureMessage = false;
+    }
+
+    public ProblemAttribute(FailureStatusCode statusCode, bool detailFromFailureMessage, [AllowNull] string title = DefaultTitle)
+    {
+        StatusCode = statusCode;
+        Detail = string.Empty;
+        Title = string.IsNullOrEmpty(title) ? DefaultTitle : title;
+        DetailFromFailureMessage = detailFromFailureMessage;
     }
 
     public FailureStatusCode StatusCode { get; }
@@ -22,4 +31,6 @@ public sealed class ProblemAttribute : Attribute
     public string Title { get; }
 
     public string? Description { get; set; }
+
+    public bool DetailFromFailureMessage { get; }
 }

@@ -213,12 +213,26 @@ internal static partial class EndpointBuilder
                     continue;
                 }
 
+                string? detail = null;
+                bool detailFromFailureMessage = false;
+
+                var detailValue = problemAttribute.GetAttributeValue(1);
+                if (detailValue is bool fromFailureMessage)
+                {
+                    detailFromFailureMessage = fromFailureMessage;
+                }
+                else
+                {
+                    detail = detailValue?.ToString();
+                }
+
                 yield return new(
                     statusFieldName: enumField.Name,
-                    statusCode: problemAttribute?.GetAttributeValue(0, "StatusCode")?.ToString(),
-                    detail: problemAttribute?.GetAttributeValue(1, "Detail")?.ToString(),
-                    title: problemAttribute?.GetAttributeValue(2, "Title")?.ToString(),
-                    description: problemAttribute?.GetAttributePropertyValue("Description")?.ToString());
+                    statusCode: problemAttribute.GetAttributeValue(0, "StatusCode")?.ToString(),
+                    detail: detail,
+                    detailFromFailureMessage: detailFromFailureMessage,
+                    title: problemAttribute.GetAttributeValue(2, "Title")?.ToString(),
+                    description: problemAttribute.GetAttributePropertyValue("Description")?.ToString());
             }
         }
 

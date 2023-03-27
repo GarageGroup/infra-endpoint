@@ -2,11 +2,12 @@ namespace GGroupp.Infra;
 
 internal sealed record class ProblemData
 {
-    public ProblemData(string statusFieldName, string? statusCode, string? detail, string? title, string? description)
+    public ProblemData(string statusFieldName, string? statusCode, string? detail, bool detailFromFailureMessage, string? title, string? description)
     {
         StatusFieldName = statusFieldName ?? string.Empty;
         StatusCode = statusCode;
         Detail = detail;
+        DetailFromFailureMessage = detailFromFailureMessage;
         Title = title;
         Description = description;
     }
@@ -16,6 +17,8 @@ internal sealed record class ProblemData
     public string? StatusCode { get; }
 
     public string? Detail { get; }
+
+    public bool DetailFromFailureMessage { get; }
 
     public string? Title { get; }
 
