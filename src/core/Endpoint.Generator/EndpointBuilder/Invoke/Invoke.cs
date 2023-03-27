@@ -508,12 +508,19 @@ partial class EndpointBuilder
             .AppendCodeLine(
                 $"title: {problem.Title.ToStringValueOrDefault()},")
             .AppendCodeLine(
-                $"status: {code},")
-            .AppendCodeLine(
-                $"detail: {problem.Detail.ToStringValueOrDefault()})")
-            .EndArguments()
-            .AppendCodeLine(
-                ".ToFailureResponse(jsonSerializerOptions);")
+                $"status: {code},");
+
+            if (problem.DetailFromFailureMessage)
+            {
+                sourceBuilder.AppendCodeLine("detail: failure.FailureMessage)");
+            }
+            else
+            {
+                sourceBuilder.AppendCodeLine($"detail: {problem.Detail.ToStringValueOrDefault()})");
+            }
+
+            sourceBuilder.EndArguments()
+            .AppendCodeLine(".ToFailureResponse(jsonSerializerOptions);")
             .EndCodeBlock()
             .AppendEmptyLine();
         }
