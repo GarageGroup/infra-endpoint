@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace GGroupp.Infra.Endpoint;
+namespace GarageGroup.Infra.Endpoint;
 
 partial class EndpointResponseHelper
 {

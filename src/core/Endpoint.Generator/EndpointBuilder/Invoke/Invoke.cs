@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using GGroupp;
 using Microsoft.CodeAnalysis;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 partial class EndpointBuilder
 {
@@ -17,8 +18,8 @@ partial class EndpointBuilder
             "System.Collections.Generic",
             "System.Threading",
             "System.Threading.Tasks",
-            "GGroupp.Infra",
-            "GGroupp.Infra.Endpoint",
+            "GarageGroup.Infra",
+            "GarageGroup.Infra.Endpoint",
             "Microsoft.Extensions.Logging")
         .AddUsings(
             type.RequestType?.GetDisplayedData().AllNamespaces)

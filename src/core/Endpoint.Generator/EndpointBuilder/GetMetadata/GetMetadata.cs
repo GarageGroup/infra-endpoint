@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using GGroupp;
 using Microsoft.CodeAnalysis;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 partial class EndpointBuilder
 {
@@ -12,8 +13,8 @@ partial class EndpointBuilder
             type.Namespace)
         .AddUsing(
             "System.Collections.Generic",
-            "GGroupp.Infra",
-            "GGroupp.Infra.Endpoint",
+            "GarageGroup.Infra",
+            "GarageGroup.Infra.Endpoint",
             "Microsoft.OpenApi.Models")
         .AddAlias(
             "static EndpointMetadataHelper")

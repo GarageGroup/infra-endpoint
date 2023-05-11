@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Security.Claims;
 
-namespace GGroupp.Infra.Endpoint;
+namespace GarageGroup.Infra.Endpoint;
 
 using IKeyValueCollection = IReadOnlyCollection<KeyValuePair<string, string?>>;
 

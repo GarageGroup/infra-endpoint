@@ -1,9 +1,9 @@
 using System;
-using GGroupp.Infra.Endpoint;
+using GarageGroup.Infra.Endpoint;
 using Microsoft.AspNetCore.Builder;
 using PrimeFuncPack;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 public static class EndpointApplicationDependency
 {

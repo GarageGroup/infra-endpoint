@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace GGroupp.Infra.Endpoint;
+namespace GarageGroup.Infra.Endpoint;
 
 public static partial class EndpointParser
 {

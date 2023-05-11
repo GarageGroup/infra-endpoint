@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 partial class Base64StringJsonConverter
 {

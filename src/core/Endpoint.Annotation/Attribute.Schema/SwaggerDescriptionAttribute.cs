@@ -1,6 +1,6 @@
 using System;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property)]
 public sealed class SwaggerDescriptionAttribute : Attribute

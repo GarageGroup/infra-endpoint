@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 #endif
 
-namespace GGroupp.Infra.Endpoint;
+namespace GarageGroup.Infra.Endpoint;
 
 public interface IEndpointMetadataProvider
 {

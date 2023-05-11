@@ -1,7 +1,8 @@
 using System.Linq;
+using GGroupp;
 using Microsoft.CodeAnalysis;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 partial class CodeAnalysisExtensions
 {
@@ -11,6 +12,6 @@ partial class CodeAnalysisExtensions
 
         static bool IsProviderType(INamedTypeSymbol interfaceType)
             =>
-            interfaceType.IsType("GGroupp.Infra", "IOpenApiSchemaProvider");
+            interfaceType.IsType("GarageGroup.Infra", "IOpenApiSchemaProvider");
     }
 }

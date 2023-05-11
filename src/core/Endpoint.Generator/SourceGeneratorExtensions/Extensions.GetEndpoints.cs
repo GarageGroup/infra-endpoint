@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GGroupp;
 using Microsoft.CodeAnalysis;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 using static EndpointAttributeHelper;
 
 internal static partial class SourceGeneratorExtensions
 {
-    private const string EndpointAttributeName = "GGroupp.Infra.EndpointAttribute";
+    private const string EndpointAttributeName = "GarageGroup.Infra.EndpointAttribute";
 
     internal static IReadOnlyCollection<EndpointTypeDescription> GetEndpointTypes(this GeneratorExecutionContext context)
     {

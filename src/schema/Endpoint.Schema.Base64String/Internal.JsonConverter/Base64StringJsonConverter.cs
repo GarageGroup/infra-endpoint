@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 internal sealed partial class Base64StringJsonConverter : JsonConverter<Base64String>
 {

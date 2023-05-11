@@ -1,6 +1,6 @@
 using System;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 public interface ISuccessStatusCodeProvider<TSuccessStatusCode>
     where TSuccessStatusCode : notnull, Enum
