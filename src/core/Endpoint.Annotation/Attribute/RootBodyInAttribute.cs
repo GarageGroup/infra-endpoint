@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 [AttributeUsage(AttributeTargets.Parameter)]
 public sealed class RootBodyInAttribute : Attribute

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 [JsonConverter(typeof(Base64StringJsonConverter))]
 public readonly record struct Base64String : IOpenApiSchemaProvider

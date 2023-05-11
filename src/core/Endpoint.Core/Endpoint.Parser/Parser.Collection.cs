@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace GGroupp.Infra.Endpoint;
+namespace GarageGroup.Infra.Endpoint;
 
 partial class EndpointParser
 {

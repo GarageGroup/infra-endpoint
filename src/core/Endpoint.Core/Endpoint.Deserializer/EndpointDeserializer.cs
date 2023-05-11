@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
-namespace GGroupp.Infra.Endpoint;
+namespace GarageGroup.Infra.Endpoint;
 
 public static partial class EndpointDeserializer
 {

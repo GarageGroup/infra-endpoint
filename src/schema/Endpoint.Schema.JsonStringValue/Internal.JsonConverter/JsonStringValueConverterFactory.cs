@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 internal sealed class JsonStringValueConverterFactory : JsonConverterFactory
 {

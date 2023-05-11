@@ -1,7 +1,7 @@
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 public interface IOpenApiSchemaProvider
 {

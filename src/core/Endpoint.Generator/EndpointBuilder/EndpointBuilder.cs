@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GGroupp;
 using Microsoft.CodeAnalysis;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 using static EndpointAttributeHelper;
 
@@ -238,7 +239,7 @@ internal static partial class EndpointBuilder
 
         static bool IsProblemAttribute(AttributeData attributeData)
             =>
-            attributeData.AttributeClass?.IsType("GGroupp.Infra", "ProblemAttribute") is true;
+            attributeData.AttributeClass?.IsType("GarageGroup.Infra", "ProblemAttribute") is true;
 
         static bool NotEmptyStatusCode(ProblemData? problemData)
             =>
@@ -251,7 +252,7 @@ internal static partial class EndpointBuilder
 
         static bool IsSuccessStatusCodeProvider(INamedTypeSymbol namedTypeSymbol)
             =>
-            namedTypeSymbol.IsType("GGroupp.Infra", "ISuccessStatusCodeProvider");
+            namedTypeSymbol.IsType("GarageGroup.Infra", "ISuccessStatusCodeProvider");
 
         static bool HasOneTypeArgument(INamedTypeSymbol namedTypeSymbol)
             =>

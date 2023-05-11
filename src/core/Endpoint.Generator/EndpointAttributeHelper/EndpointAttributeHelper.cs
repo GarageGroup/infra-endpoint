@@ -1,10 +1,11 @@
+using GGroupp;
 using Microsoft.CodeAnalysis;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 internal static partial class EndpointAttributeHelper
 {
-    private const string AttributeNamespace = "GGroupp.Infra";
+    private const string AttributeNamespace = "GarageGroup.Infra";
 
     private const string RootBodyInAttribute = "RootBodyInAttribute";
 

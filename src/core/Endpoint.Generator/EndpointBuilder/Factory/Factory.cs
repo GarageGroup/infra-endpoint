@@ -1,4 +1,6 @@
-namespace GGroupp.Infra;
+using GGroupp;
+
+namespace GarageGroup.Infra;
 
 partial class EndpointBuilder
 {
@@ -9,7 +11,7 @@ partial class EndpointBuilder
         .AddUsing(
             "System",
             "System.Text.Json",
-            "GGroupp.Infra.Endpoint",
+            "GarageGroup.Infra.Endpoint",
             "Microsoft.Extensions.Logging")
         .AppendEndpointMetadataAttribute(
             type)

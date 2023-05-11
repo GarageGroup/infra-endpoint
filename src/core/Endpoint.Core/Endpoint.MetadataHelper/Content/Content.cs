@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.OpenApi.Models;
 
-namespace GGroupp.Infra.Endpoint;
+namespace GarageGroup.Infra.Endpoint;
 
 partial class EndpointMetadataHelper
 {

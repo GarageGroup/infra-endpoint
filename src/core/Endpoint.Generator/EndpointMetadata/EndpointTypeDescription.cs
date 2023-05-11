@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 internal sealed record class EndpointTypeDescription
 {

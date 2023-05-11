@@ -1,7 +1,8 @@
 using System.Linq;
+using GGroupp;
 using Microsoft.CodeAnalysis;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 partial class CodeAnalysisExtensions
 {
@@ -16,7 +17,7 @@ partial class CodeAnalysisExtensions
 
         static bool IsEndpointTypeParserType(INamedTypeSymbol interfaceType)
             =>
-            interfaceType.IsType("GGroupp.Infra", "IEndpointTypeParser");
+            interfaceType.IsType("GarageGroup.Infra", "IEndpointTypeParser");
 
         bool IsParedTypeEqualToSourceType(INamedTypeSymbol interfaceType)
             =>

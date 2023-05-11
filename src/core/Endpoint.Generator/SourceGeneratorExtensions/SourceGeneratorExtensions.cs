@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using GGroupp;
 using Microsoft.CodeAnalysis;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 internal static partial class SourceGeneratorExtensions
 {

@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class HeaderOutAttribute : Attribute

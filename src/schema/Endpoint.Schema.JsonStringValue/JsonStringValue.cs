@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
-namespace GGroupp.Infra;
+namespace GarageGroup.Infra;
 
 [JsonConverter(typeof(JsonStringValueConverterFactory))]
 public readonly record struct JsonStringValue<TValue> : IOpenApiSchemaProvider, IEndpointTypeParser<JsonStringValue<TValue>>

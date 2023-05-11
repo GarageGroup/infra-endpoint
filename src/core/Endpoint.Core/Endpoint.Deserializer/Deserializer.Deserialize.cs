@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace GGroupp.Infra.Endpoint;
+namespace GarageGroup.Infra.Endpoint;
 
 partial class EndpointDeserializer
 {

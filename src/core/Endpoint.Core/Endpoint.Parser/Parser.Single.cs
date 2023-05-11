@@ -1,6 +1,6 @@
 using System;
 
-namespace GGroupp.Infra.Endpoint;
+namespace GarageGroup.Infra.Endpoint;
 
 partial class EndpointParser
 {

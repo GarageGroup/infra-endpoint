@@ -1,6 +1,6 @@
 using System;
 
-namespace GGroupp.Infra.Endpoint;
+namespace GarageGroup.Infra.Endpoint;
 
 [AttributeUsage(AttributeTargets.Class)]
 public sealed class EndpointMetadataAttribute : Attribute

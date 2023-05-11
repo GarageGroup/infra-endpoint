@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text;
 
-namespace GGroupp.Infra.Endpoint;
+namespace GarageGroup.Infra.Endpoint;
 
 partial class EndpointResponseHelper
 {
