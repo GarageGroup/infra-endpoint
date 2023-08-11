@@ -8,12 +8,12 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GarageGroup.Infra</RootNamespace>
     <AssemblyName>GarageGroup.Infra.Endpoint.Schema.JsonStringValue</AssemblyName>
-    <Version>0.2.1</Version>
+    <Version>0.3.0-rc.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GarageGroup.Infra.Endpoint.SchemaProvider" Version="0.2.1" />
-    <PackageReference Include="GarageGroup.Infra.Endpoint.TypeParser" Version="0.1.1" />
+    <PackageReference Include="GarageGroup.Infra.Endpoint.SchemaProvider" Version="0.2.2" />
+    <PackageReference Include="GarageGroup.Infra.Endpoint.TypeParser" Version="0.2.0-rc.1" />
   </ItemGroup>
 
 </Project>

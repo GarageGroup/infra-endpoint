@@ -63,16 +63,22 @@ partial class EndpointBuilder
         }
 
         _ = sourceBuilder
-            .AppendCodeLine("if (inputResult.IsFailure)")
+            .AppendCodeLine(
+                "if (inputResult.IsFailure)")
             .BeginCodeBlock()
-            .AppendCodeLine("var inputFailure = inputResult.FailureOrThrow();")
+            .AppendCodeLine(
+                "var inputFailure = inputResult.FailureOrThrow();")
             .AppendEmptyLine()
-            .AppendCodeLine("logger?.LogError(\"Request is incorrect: {failureMessage}\", inputFailure.FailureMessage);")
-            .AppendCodeLine("return inputResult.FailureOrThrow().ToBadRequestResponse(jsonSerializerOptions);")
+            .AppendCodeLine(
+                "logger?.LogError(inputFailure.SourceException, \"Request is incorrect: {failureMessage}\", inputFailure.FailureMessage);")
+            .AppendCodeLine(
+                "return inputResult.FailureOrThrow().ToBadRequestResponse(jsonSerializerOptions);")
             .EndCodeBlock()
             .AppendEmptyLine()
-            .AppendCodeLine("var input = inputResult.SuccessOrThrow();")
-            .AppendCodeLine($"var endpointResult = await endpointFunc.{type.GetMethodFuncName()}(input, cancellationToken).ConfigureAwait(false);")
+            .AppendCodeLine(
+                "var input = inputResult.SuccessOrThrow();")
+            .AppendCodeLine(
+                $"var endpointResult = await endpointFunc.{type.GetMethodFuncName()}(input, cancellationToken).ConfigureAwait(false);")
             .AppendEmptyLine();
 
         if (type.FailureCodeType is null)
@@ -167,7 +173,7 @@ partial class EndpointBuilder
             var codeLine = new StringBuilder(
                 $"var {parameter.Name}Result = await request.DeserializeBodyAsync<{requestBodyData.DisplayedTypeName}>")
             .Append(
-                "(jsonSerializerOptions, logger, token).ConfigureAwait(false);")
+                "(jsonSerializerOptions, token).ConfigureAwait(false);")
             .ToString();
 
             sourceBuilder
@@ -211,7 +217,7 @@ partial class EndpointBuilder
     private static SourceBuilder AppendParseJsonDocument(this SourceBuilder sourceBuilder)
         =>
         sourceBuilder.AppendCodeLine(
-            "var jsonDocumentResult = await request.ParseDocumentAsync(logger, token).ConfigureAwait(false);")
+            "var jsonDocumentResult = await request.ParseDocumentAsync(token).ConfigureAwait(false);")
         .AppendCodeLine(
             "if (jsonDocumentResult.IsFailure)")
         .BeginCodeBlock()
@@ -264,7 +270,7 @@ partial class EndpointBuilder
             }
 
             var nullableSign = isNullable ? "?" : string.Empty;
-            return $"DeserializeOrFailure<{typeData.DisplayedTypeName}{nullableSign}>({jsonPropertyValue}, logger, jsonSerializerOptions)";
+            return $"DeserializeOrFailure<{typeData.DisplayedTypeName}{nullableSign}>({jsonPropertyValue}, jsonSerializerOptions)";
         }
     }
 
@@ -498,7 +504,7 @@ partial class EndpointBuilder
                 $"if (failure.FailureCode is {failureCodeTypeName}.{problem.StatusFieldName})")
             .BeginCodeBlock()
             .AppendCodeLine(
-                $"LogUnexpectedStatusCode({code}, failure.FailureMessage);")
+                $"LogUnexpectedStatusCode({code}, failure.SourceException, failure.FailureMessage);")
             .AppendEmptyLine()
             .AppendCodeLine(
                 "return new EndpointProblem(")
@@ -526,7 +532,11 @@ partial class EndpointBuilder
         }
 
         sourceBuilder.AppendCodeLine(
-            "logger?.LogError(\"Unexpected http error: {errorCode}. Message: {message}\", failure.FailureCode, failure.FailureMessage);")
+            "logger?.LogError(" + 
+            "failure.SourceException, " +
+            "\"An unexpected http error: {errorCode}. Message: {message}\", " +
+            "failure.FailureCode, " +
+            "failure.FailureMessage);")
         .AppendCodeLine(
             "return new(500, default, default);");
 
@@ -536,10 +546,10 @@ partial class EndpointBuilder
         }
 
         return sourceBuilder.AppendEmptyLine().AppendCodeLine(
-            "void LogUnexpectedStatusCode(int code, string failureMessage)")
+            "void LogUnexpectedStatusCode(int code, Exception? sourceException, string failureMessage)")
         .BeginLambda()
         .AppendCodeLine(
-            "logger?.LogInformation(\"Unsuccessful status code: {statusCode}. Message: {message}\", code, failureMessage);")
+            "logger?.LogInformation(sourceException, \"An unsuccessful status code: {statusCode}. Message: {message}\", code, failureMessage);")
         .EndLambda();
     }
 
