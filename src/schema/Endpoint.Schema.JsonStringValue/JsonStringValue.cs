@@ -32,7 +32,7 @@ public readonly record struct JsonStringValue<TValue> : IOpenApiSchemaProvider, 
         }
         catch (Exception ex)
         {
-            return Failure.Create($"Deserialization error: {ex.Message}");
+            return ex.ToFailure($"Un unexpected deserialization exception was thrown when deserializing JsonStringValue<{typeof(TValue).Name}>");
         }
     }
 
