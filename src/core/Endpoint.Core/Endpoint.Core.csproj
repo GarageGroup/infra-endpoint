@@ -8,14 +8,14 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GarageGroup.Infra</RootNamespace>
     <AssemblyName>GarageGroup.Infra.Endpoint.Core</AssemblyName>
-    <Version>0.8.0-rc.1</Version>
+    <Version>0.8.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="GarageGroup.Infra.Endpoint.Annotation" Version="0.4.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
     <PackageReference Include="Microsoft.OpenApi" Version="1.6.6" />
-    <PackageReference Include="PrimeFuncPack.Core.Failure" Version="2.1.0-rc.1" />
+    <PackageReference Include="PrimeFuncPack.Core.Failure" Version="2.1.0" />
     <PackageReference Include="PrimeFuncPack.Core.Optional" Version="2.1.0" />
     <PackageReference Include="PrimeFuncPack.Core.Result" Version="2.0.2" />
   </ItemGroup>
