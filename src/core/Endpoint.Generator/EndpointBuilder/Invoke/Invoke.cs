@@ -8,7 +8,7 @@ namespace GarageGroup.Infra;
 
 partial class EndpointBuilder
 {
-    internal static string BuildEndpointIvokeSource(this EndpointTypeDescription type)
+    internal static string BuildEndpointInvokeSource(this EndpointTypeDescription type)
         =>
         new SourceBuilder(
             type.Namespace)
