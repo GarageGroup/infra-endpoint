@@ -8,7 +8,7 @@ namespace GarageGroup.Infra;
 
 partial class EndpointBuilder
 {
-    internal static string BuildEndpointIvokeSource(this EndpointTypeDescription type)
+    internal static string BuildEndpointInvokeSource(this EndpointTypeDescription type)
         =>
         new SourceBuilder(
             type.Namespace)
@@ -234,7 +234,7 @@ partial class EndpointBuilder
         var parameterName = jsonBodyProperty.PropertyName;
         resultParameters.Add(parameterName);
 
-        var jsonPropertyValue = jsonBodyProperty.JsonPropertyName.ToStringValueOrEmpty();
+        var jsonPropertyValue = jsonBodyProperty.JsonPropertyName.AsStringSourceCodeOrStringEmpty();
         var isNullable = jsonBodyProperty.PropertyType.IsNullable();
 
         var nullableValue = isNullable ? "Nullable" : string.Empty;
@@ -376,7 +376,7 @@ partial class EndpointBuilder
 
         static KeyValuePair<string, string> GetPropertyValue(KeyValuePair<string, IPropertySymbol> headerProperty)
         {
-            var key = headerProperty.Key.ToStringValueOrEmpty();
+            var key = headerProperty.Key.AsStringSourceCodeOrStringEmpty();
             var propertyName = headerProperty.Value.Name;
 
             if (headerProperty.Value.Type.IsSystemType("String") is false)
@@ -391,7 +391,7 @@ partial class EndpointBuilder
                 }
             }
 
-            return new(headerProperty.Key.ToStringValueOrEmpty(), $"success.{propertyName}");
+            return new(headerProperty.Key.AsStringSourceCodeOrStringEmpty(), $"success.{propertyName}");
         }
     }
 
@@ -415,7 +415,7 @@ partial class EndpointBuilder
             sourceBuilder.AppendCodeLine($"if ({conditionValue} is not null)").BeginCodeBlock();
         }
 
-        var jsonNameValue = jsonBodyProperty.JsonPropertyName.ToStringValueOrEmpty();
+        var jsonNameValue = jsonBodyProperty.JsonPropertyName.AsStringSourceCodeOrStringEmpty();
 
         if (type.IsSystemType(nameof(String)))
         {
@@ -510,9 +510,9 @@ partial class EndpointBuilder
                 "return new EndpointProblem(")
             .BeginArguments()
             .AppendCodeLine(
-                $"type: {GetStatusDescription(problem.StatusCode).ToStringValueOrDefault()},")
+                $"type: {GetStatusDescription(problem.StatusCode).AsStringValueOrDefault()},")
             .AppendCodeLine(
-                $"title: {problem.Title.ToStringValueOrDefault()},")
+                $"title: {problem.Title.AsStringValueOrDefault()},")
             .AppendCodeLine(
                 $"status: {code},");
 
@@ -522,7 +522,7 @@ partial class EndpointBuilder
             }
             else
             {
-                sourceBuilder.AppendCodeLine($"detail: {problem.Detail.ToStringValueOrDefault()})");
+                sourceBuilder.AppendCodeLine($"detail: {problem.Detail.AsStringValueOrDefault()})");
             }
 
             sourceBuilder.EndArguments()

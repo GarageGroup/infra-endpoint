@@ -15,7 +15,7 @@ internal sealed class EndpointSourceGenerator : ISourceGenerator
             var endpointMetadataSource = endpointType.BuildEndpointMetadataSource();
             context.AddSource(endpointType.TypeEndpointName + ".Metadata.g.cs", endpointMetadataSource);
 
-            var endpointIvokeSource = endpointType.BuildEndpointIvokeSource();
+            var endpointIvokeSource = endpointType.BuildEndpointInvokeSource();
             context.AddSource(endpointType.TypeEndpointName + ".Invoke.g.cs", endpointIvokeSource);
         }
     }

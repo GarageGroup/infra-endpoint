@@ -229,7 +229,7 @@ partial class EndpointBuilder
         }
 
         var value = stringExampleAttribute.GetAttributeValue(0)?.ToString();
-        return $"new OpenApiString({value.ToStringValueOrEmpty()})";
+        return $"new OpenApiString({value.AsStringSourceCodeOrStringEmpty()})";
     }
 
     private static string? GetDescriptionValue(this ISymbol symbol)
@@ -241,7 +241,7 @@ partial class EndpointBuilder
         }
 
         var value = swaggerDescriptionAttribute.GetAttributeValue(0)?.ToString();
-        return value.ToStringValueOrDefault();
+        return value.AsStringValueOrDefault();
     }
 
     private static IReadOnlyCollection<SuccessData> GetSuccessData(this EndpointTypeDescription type)

@@ -332,19 +332,7 @@ internal static partial class EndpointBuilder
         =>
         source ? "true" : "false";
 
-    private static string ToStringValueOrDefault(this string? source)
+    private static string AsStringValueOrDefault(this string? source)
         =>
-        source.ToStringValue("default");
-
-    private static string ToStringValueOrEmpty(this string? source)
-        =>
-        source.ToStringValue("string.Empty");
-
-    private static string ToStringValue(this string? source, string orElse = "\"\"")
-        =>
-        string.IsNullOrEmpty(source) ? orElse : $"\"{source.EncodeString()}\"";
-
-    private static string? EncodeString(this string? source)
-        =>
-        source?.Replace("\"", "\\\"");
+        source.AsStringSourceCodeOr("default");
 }
