@@ -113,28 +113,28 @@ partial class EndpointBuilder
         if (parameter.GetAttributes().FirstOrDefault(IsRouteInAttribute) is AttributeData routeInAttribute)
         {
             var name = routeInAttribute.ConstructorArguments.FirstOrDefault().Value?.ToString();
-            return $"GetRouteValue({GetParameterName(name).ToStringValueOrEmpty()})";
+            return $"GetRouteValue({GetParameterName(name).AsStringSourceCodeOrStringEmpty()})";
         }
         
         if (parameter.GetAttributes().FirstOrDefault(IsQueryInAttribute) is AttributeData queryInAttribute)
         {
             var name = queryInAttribute.ConstructorArguments.FirstOrDefault().Value?.ToString();
-            return $"GetQueryParameterValue({GetParameterName(name).ToStringValueOrEmpty()})";
+            return $"GetQueryParameterValue({GetParameterName(name).AsStringSourceCodeOrStringEmpty()})";
         }
 
         if (parameter.GetAttributes().FirstOrDefault(IsHeaderInAttribute) is AttributeData headerInAttribute)
         {
             var name = headerInAttribute.ConstructorArguments.FirstOrDefault().Value?.ToString();
-            return $"GetHeaderValue({GetParameterName(name).ToStringValueOrEmpty()})";
+            return $"GetHeaderValue({GetParameterName(name).AsStringSourceCodeOrStringEmpty()})";
         }
 
         if (parameter.GetAttributes().FirstOrDefault(IsClaimInAttribute) is AttributeData claimInAttribute)
         {
             var name = claimInAttribute.ConstructorArguments.FirstOrDefault().Value?.ToString();
-            return $"GetClaimValue({GetParameterName(name).ToStringValueOrEmpty()})";
+            return $"GetClaimValue({GetParameterName(name).AsStringSourceCodeOrStringEmpty()})";
         }
 
-        return $"GetQueryParameterValue({parameter.Name.ToStringValueOrEmpty()})";
+        return $"GetQueryParameterValue({parameter.Name.AsStringSourceCodeOrStringEmpty()})";
 
         string GetParameterName(string? fromAttribute)
             =>

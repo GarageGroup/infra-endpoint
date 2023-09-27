@@ -17,7 +17,7 @@ partial class EndpointBuilder
             $"public sealed partial class {type.TypeEndpointName} : IEndpoint")
         .BeginCodeBlock()
         .AppendCodeLine(
-            $"internal static {type.TypeEndpointName} Resolve(IServiceProvider? serviceProvider, {type.TypeFuncName} endpointFunc)")
+            $"{type.GetTypeVisibility()} static {type.TypeEndpointName} Resolve(IServiceProvider? serviceProvider, {type.TypeFuncName} endpointFunc)")
         .BeginLambda()
         .AppendCodeLine(
             "new(")
@@ -51,10 +51,14 @@ partial class EndpointBuilder
         .EndCodeBlock()
         .Build();
 
+    private static string GetTypeVisibility(this EndpointTypeDescription type)
+        =>
+        type.IsTypePublic ? "public" : "internal";
+
     private static SourceBuilder AppendEndpointMetadataAttribute(this SourceBuilder builder, EndpointTypeDescription type)
     {
         var method = type.MethodName?.ToUpperInvariant();
-        return builder.AppendCodeLine($"[EndpointMetadata({method.ToStringValue()}, {type.Route.ToStringValue()})]");
+        return builder.AppendCodeLine($"[EndpointMetadata({method.AsStringSourceCodeOr()}, {type.Route.AsStringSourceCodeOr()})]");
     }
 
     private static string GetNullValidationValue(string argumentName, bool isStructType)

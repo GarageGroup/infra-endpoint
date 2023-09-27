@@ -7,6 +7,8 @@ internal sealed record class EndpointTypeDescription
 {
     public string? Namespace { get; set; }
 
+    public bool IsTypePublic { get; set; }
+
     public string? TypeRootName { get; set; }
 
     public string TypeEndpointName => TypeRootName + "Endpoint";

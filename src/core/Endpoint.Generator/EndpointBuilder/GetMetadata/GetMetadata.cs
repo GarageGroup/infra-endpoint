@@ -28,14 +28,14 @@ partial class EndpointBuilder
         .BeginArguments()
         .AppendCodeLine(
             $"method: {type.GetMethodValue()},",
-            $"route: {type.Route.ToStringValueOrEmpty()},",
+            $"route: {type.Route.AsStringSourceCodeOrStringEmpty()},",
             "summary: default,",
             "description: default,",
             "operation: new()")
         .BeginCodeBlock()
         .AppendCodeLine(
-            $"Summary = {type.Summary.ToStringValueOrDefault()},",
-            $"Description = {type.Description.ToStringValueOrDefault()},")
+            $"Summary = {type.Summary.AsStringValueOrDefault()},",
+            $"Description = {type.Description.AsStringValueOrDefault()},")
         .AppendTags(type)
         .AppendOperationParameters(type)
         .AppendRequestBody(type)
@@ -73,8 +73,8 @@ partial class EndpointBuilder
             sourceBuilder
                 .AppendCodeLine("new()")
                 .BeginCodeBlock()
-                .AppendCodeLine("Name = " + tag.Name.ToStringValueOrEmpty() + ",")
-                .AppendCodeLine("Description = " + tag.Description.ToStringValueOrDefault());
+                .AppendCodeLine("Name = " + tag.Name.AsStringSourceCodeOrStringEmpty() + ",")
+                .AppendCodeLine("Description = " + tag.Description.AsStringValueOrDefault());
 
             if (i < tags.Length - 1)
             {
@@ -112,9 +112,9 @@ partial class EndpointBuilder
                 .BeginCodeBlock()
                 .AppendCodeLine($"Required = {parameter.Required.ToStringValue()},")
                 .AppendCodeLine($"In = ParameterLocation.{parameter.Location},")
-                .AppendCodeLine($"Name = {parameter.Name.ToStringValueOrEmpty()},")
+                .AppendCodeLine($"Name = {parameter.Name.AsStringSourceCodeOrStringEmpty()},")
                 .AppendCodeLine($"Schema = {parameter.SchemaFunction},")
-                .AppendCodeLine($"Description = {parameter.Description.ToStringValueOrDefault()}");
+                .AppendCodeLine($"Description = {parameter.Description.AsStringValueOrDefault()}");
 
             if (i < parameterDescriptions.Length - 1)
             {
@@ -192,12 +192,12 @@ partial class EndpointBuilder
             var statusCode = success.StatusCode ?? type.GetDefaultStatusCode();
             var descriptionValue = string.IsNullOrEmpty(success.Description) switch
             {
-                true => GetStatusDescription(statusCode).ToStringValueOrDefault(),
-                _ => success.Description.ToStringValueOrDefault()
+                true => GetStatusDescription(statusCode).AsStringValueOrDefault(),
+                _ => success.Description.AsStringValueOrDefault()
             };
 
             sourceBuilder
-                .AppendCodeLine($"[{statusCode.ToStringValueOrEmpty()}] = new()")
+                .AppendCodeLine($"[{statusCode.AsStringSourceCodeOrStringEmpty()}] = new()")
                 .BeginCodeBlock()
                 .AppendCodeLine($"Description = {descriptionValue},");
 
@@ -254,12 +254,12 @@ partial class EndpointBuilder
             var failureCode = problem.StatusCode;
             var descriptionValue = string.IsNullOrEmpty(problem.Description) switch
             {
-                true => GetStatusDescription(failureCode).ToStringValueOrDefault(),
-                _ => problem.Description.ToStringValueOrDefault()
+                true => GetStatusDescription(failureCode).AsStringValueOrDefault(),
+                _ => problem.Description.AsStringValueOrDefault()
             };
 
             sourceBuilder
-                .AppendCodeLine($"[{failureCode.ToStringValueOrEmpty()}] = new()")
+                .AppendCodeLine($"[{failureCode.AsStringSourceCodeOrStringEmpty()}] = new()")
                 .BeginCodeBlock()
                 .AppendCodeLine($"Description = {descriptionValue},")
                 .AppendCodeLine("Content = CreateProblemContent()")
@@ -299,11 +299,11 @@ partial class EndpointBuilder
 
         if (string.IsNullOrEmpty(requestBodySchema) is false)
         {
-            return sourceBuilder.AppendCodeLine($"Content = {requestBodySchema}.CreateContent({bodyType.ContentType.ToStringValueOrEmpty()})");
+            return sourceBuilder.AppendCodeLine($"Content = {requestBodySchema}.CreateContent({bodyType.ContentType.AsStringSourceCodeOrStringEmpty()})");
         }
 
         return sourceBuilder.AppendSchema("Content", bodyType.BodyType, 0, exampleValue, description).AppendCodeLine(
-            $".CreateContent({bodyType.ContentType.ToStringValueOrEmpty()})");
+            $".CreateContent({bodyType.ContentType.AsStringSourceCodeOrStringEmpty()})");
     }
 
     private static SourceBuilder AppendJsonPropertiesContent(
@@ -318,7 +318,7 @@ partial class EndpointBuilder
 
         foreach (var property in jsonProperties)
         {
-            var propertyName = "[" + property.JsonPropertyName.ToStringValueOrEmpty() + "]";
+            var propertyName = "[" + property.JsonPropertyName.AsStringSourceCodeOrStringEmpty() + "]";
 
             var exampleValue = property.PropertySymbol.GetExampleValue();
             var description = property.PropertySymbol.GetDescriptionValue();
@@ -374,7 +374,7 @@ partial class EndpointBuilder
 
         foreach (var jsonProperty in type.GetJsonProperties())
         {
-            var propertyName = "[" + jsonProperty.GetJsonPropertyName().ToStringValueOrEmpty() + "]";
+            var propertyName = "[" + jsonProperty.GetJsonPropertyName().AsStringSourceCodeOrStringEmpty() + "]";
 
             var jsonExampleValue = jsonProperty.GetExampleValue();
             var jsonDescription = jsonProperty.GetDescriptionValue();

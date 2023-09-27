@@ -38,11 +38,8 @@ internal static partial class SourceGeneratorExtensions
             throw new NotSupportedException("Generic types are not supported");
         }
 
-        var endpointMethod = typeSymbol.GetMembers().OfType<IMethodSymbol>().FirstOrDefault(IsEndpointMethod);
-        if (endpointMethod is null)
-        {
-            throw new InvalidOperationException($"An endpoint method was not found in the type {typeSymbol.Name}");
-        }
+        var endpointMethod = typeSymbol.GetMembers().OfType<IMethodSymbol>().FirstOrDefault(IsEndpointMethod)
+            ?? throw new InvalidOperationException($"An endpoint method was not found in the type {typeSymbol.Name}");
 
         var methodRetrunType = endpointMethod.ReturnType.GetTaskType();
         var failureType = methodRetrunType.IsResultType() ? methodRetrunType?.TypeArguments[1] as INamedTypeSymbol : null;
@@ -59,6 +56,7 @@ internal static partial class SourceGeneratorExtensions
         return new()
         {
             Namespace = typeSymbol.ContainingNamespace.ToString(),
+            IsTypePublic = typeSymbol.DeclaredAccessibility is Accessibility.Public,
             TypeRootName = typeSymbol.Name.GetTypeRootName(),
             TypeFuncName = typeSymbol.Name,
             IsTypeFuncStruct = typeSymbol.IsReferenceType is false,
