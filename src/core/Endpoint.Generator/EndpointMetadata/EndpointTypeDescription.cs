@@ -36,4 +36,6 @@ internal sealed record class EndpointTypeDescription
     public ITypeSymbol? ResponseType { get; set; }
 
     public ITypeSymbol? FailureCodeType { get; set; }
+
+    public ObsoleteData? ObsoleteData { get; set; }
 }

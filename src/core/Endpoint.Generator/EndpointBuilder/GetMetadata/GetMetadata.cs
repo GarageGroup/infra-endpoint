@@ -33,6 +33,8 @@ partial class EndpointBuilder
             "description: default,",
             "operation: new()")
         .BeginCodeBlock()
+        .AppendDeprecatedTagIfNecessary(
+            type)
         .AppendCodeLine(
             $"Summary = {type.Summary.AsStringValueOrDefault()},",
             $"Description = {type.Description.AsStringValueOrDefault()},")
@@ -55,6 +57,17 @@ partial class EndpointBuilder
         .EndLambda()
         .EndCodeBlock()
         .Build();
+
+    private static SourceBuilder AppendDeprecatedTagIfNecessary(this SourceBuilder sourceBuilder, EndpointTypeDescription type)
+    {
+        if (type.ObsoleteData is null)
+        {
+            return sourceBuilder;
+        }
+
+        return sourceBuilder.AppendCodeLine(
+            "Deprecated = true,");
+    }
 
     private static SourceBuilder AppendTags(this SourceBuilder sourceBuilder, EndpointTypeDescription type)
     {

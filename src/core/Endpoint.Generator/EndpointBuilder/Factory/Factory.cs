@@ -16,8 +16,9 @@ partial class EndpointBuilder
         .AppendCodeLine(
             $"public sealed partial class {type.TypeEndpointName} : IEndpoint")
         .BeginCodeBlock()
+        .AppendObsoleteAttributeIfNecessary(type)
         .AppendCodeLine(
-            $"{type.GetTypeVisibility()} static {type.TypeEndpointName} Resolve(IServiceProvider? serviceProvider, {type.TypeFuncName} endpointFunc)")
+            $"{type.GetVisibility()} static {type.TypeEndpointName} Resolve(IServiceProvider? serviceProvider, {type.TypeFuncName} endpointFunc)")
         .BeginLambda()
         .AppendCodeLine(
             "new(")
@@ -32,6 +33,7 @@ partial class EndpointBuilder
         .AppendCodeLine(
             "private static readonly JsonSerializerOptions DefaultSerializerOptions = EndpointDeserializer.CreateDeafultOptions();")
         .AppendEmptyLine()
+        .AppendObsoleteAttributeIfNecessary(type)
         .AppendCodeLine(
             $"private readonly {type.TypeFuncName} endpointFunc;")
         .AppendEmptyLine()
@@ -40,6 +42,8 @@ partial class EndpointBuilder
         .AppendEmptyLine()
         .AppendCodeLine(
             "private readonly ILogger? logger;")
+        .AppendEmptyLine()
+        .AppendObsoleteAttributeIfNecessary(type)
         .AppendCodeLine(
             $"private {type.TypeEndpointName}({type.TypeFuncName} endpointFunc, JsonSerializerOptions jsonSerializerOptions, ILogger? logger)")
         .BeginCodeBlock()
@@ -51,7 +55,7 @@ partial class EndpointBuilder
         .EndCodeBlock()
         .Build();
 
-    private static string GetTypeVisibility(this EndpointTypeDescription type)
+    private static string GetVisibility(this EndpointTypeDescription type)
         =>
         type.IsTypePublic ? "public" : "internal";
 

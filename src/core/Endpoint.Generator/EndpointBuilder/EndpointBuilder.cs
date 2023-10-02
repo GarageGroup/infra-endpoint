@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace GarageGroup.Infra;
@@ -14,6 +15,36 @@ internal static partial class EndpointBuilder
     private const string DefaultSuccessStatusCodeValue = "200";
 
     private const string NoContentStatusCodeValue = "204";
+
+    private static SourceBuilder AppendObsoleteAttributeIfNecessary(this SourceBuilder builder, EndpointTypeDescription type)
+    {
+        if (type.ObsoleteData is null)
+        {
+            return builder;
+        }
+
+        var attributeBuilder = new StringBuilder("[Obsolete(").Append(type.ObsoleteData.Message.AsStringValueOrDefault());
+
+        attributeBuilder = type.ObsoleteData.IsError switch
+        {
+            true => attributeBuilder.Append(", true"),
+            false => attributeBuilder.Append(", false"),
+            _ => attributeBuilder
+        };
+
+        if (string.IsNullOrEmpty(type.ObsoleteData.DiagnosticId) is false)
+        {
+            attributeBuilder = attributeBuilder.Append(", DiagnosticId = ").Append(type.ObsoleteData.DiagnosticId.AsStringValueOrDefault());
+        }
+
+        if (string.IsNullOrEmpty(type.ObsoleteData.UrlFormat) is false)
+        {
+            attributeBuilder = attributeBuilder.Append(", UrlFormat = ").Append(type.ObsoleteData.UrlFormat.AsStringValueOrDefault());
+        }
+
+        attributeBuilder = attributeBuilder.Append(")]");
+        return builder.AppendCodeLine(attributeBuilder.ToString());
+    }
 
     private static string GetDefaultStatusCode(this EndpointTypeDescription type)
         =>
