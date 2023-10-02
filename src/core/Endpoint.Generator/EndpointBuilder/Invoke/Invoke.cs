@@ -29,6 +29,7 @@ partial class EndpointBuilder
         .AppendCodeLine(
             "partial class " + type.TypeEndpointName)
         .BeginCodeBlock()
+        .AppendObsoleteAttributeIfNecessary(type)
         .AppendCodeLine(
             "public async Task<EndpointResponse> InvokeAsync(EndpointRequest request, CancellationToken cancellationToken = default)")
         .BeginCodeBlock()
@@ -37,6 +38,7 @@ partial class EndpointBuilder
         .AppendEmptyLine()
         .AppendMapRequestFunction(type)
         .AppendEmptyLine()
+        .AppendObsoleteAttributeIfNecessary(type)
         .AppendCodeLine(
             $"private EndpointResponse MapSuccess({type.GetResponseTypeName()} success)")
         .BeginCodeBlock()
@@ -92,6 +94,8 @@ partial class EndpointBuilder
     private static SourceBuilder AppendMapRequestFunction(this SourceBuilder sourceBuilder, EndpointTypeDescription type)
     {
         var inTypeName = type.GetRequestTypeName();
+
+        sourceBuilder = sourceBuilder.AppendObsoleteAttributeIfNecessary(type);
 
         if (type.HasRequestBody() is false)
         {
@@ -484,6 +488,7 @@ partial class EndpointBuilder
 
         return sourceBuilder
             .AppendEmptyLine()
+            .AppendObsoleteAttributeIfNecessary(type)
             .AppendCodeLine(
                 $"private EndpointResponse MapFailure(Failure<{type.GetFailureCodeTypeName()}> failure)")
             .BeginCodeBlock()

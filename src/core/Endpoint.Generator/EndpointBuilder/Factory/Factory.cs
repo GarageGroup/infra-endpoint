@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace GarageGroup.Infra;
 
 partial class EndpointBuilder
@@ -13,13 +11,12 @@ partial class EndpointBuilder
             "System.Text.Json",
             "GarageGroup.Infra.Endpoint",
             "Microsoft.Extensions.Logging")
-        .AppendObsoleteAttributeIfNecessary(
-            type)
         .AppendEndpointMetadataAttribute(
             type)
         .AppendCodeLine(
             $"public sealed partial class {type.TypeEndpointName} : IEndpoint")
         .BeginCodeBlock()
+        .AppendObsoleteAttributeIfNecessary(type)
         .AppendCodeLine(
             $"{type.GetVisibility()} static {type.TypeEndpointName} Resolve(IServiceProvider? serviceProvider, {type.TypeFuncName} endpointFunc)")
         .BeginLambda()
@@ -36,6 +33,7 @@ partial class EndpointBuilder
         .AppendCodeLine(
             "private static readonly JsonSerializerOptions DefaultSerializerOptions = EndpointDeserializer.CreateDeafultOptions();")
         .AppendEmptyLine()
+        .AppendObsoleteAttributeIfNecessary(type)
         .AppendCodeLine(
             $"private readonly {type.TypeFuncName} endpointFunc;")
         .AppendEmptyLine()
@@ -45,6 +43,7 @@ partial class EndpointBuilder
         .AppendCodeLine(
             "private readonly ILogger? logger;")
         .AppendEmptyLine()
+        .AppendObsoleteAttributeIfNecessary(type)
         .AppendCodeLine(
             $"private {type.TypeEndpointName}({type.TypeFuncName} endpointFunc, JsonSerializerOptions jsonSerializerOptions, ILogger? logger)")
         .BeginCodeBlock()
@@ -59,36 +58,6 @@ partial class EndpointBuilder
     private static string GetVisibility(this EndpointTypeDescription type)
         =>
         type.IsTypePublic ? "public" : "internal";
-
-    private static SourceBuilder AppendObsoleteAttributeIfNecessary(this SourceBuilder builder, EndpointTypeDescription type)
-    {
-        if (type.ObsoleteData is null)
-        {
-            return builder;
-        }
-
-        var attributeBuilder = new StringBuilder("[Obsolete(").Append(type.ObsoleteData.Message.AsStringValueOrDefault());
-
-        attributeBuilder = type.ObsoleteData.IsError switch
-        {
-            true => attributeBuilder.Append(", true"),
-            false => attributeBuilder.Append(", false"),
-            _ => attributeBuilder
-        };
-
-        if (string.IsNullOrEmpty(type.ObsoleteData.DiagnosticId) is false)
-        {
-            attributeBuilder = attributeBuilder.Append(", DiagnosticId = ").Append(type.ObsoleteData.DiagnosticId.AsStringValueOrDefault());
-        }
-
-        if (string.IsNullOrEmpty(type.ObsoleteData.UrlFormat) is false)
-        {
-            attributeBuilder = attributeBuilder.Append(", UrlFormat = ").Append(type.ObsoleteData.UrlFormat.AsStringValueOrDefault());
-        }
-
-        attributeBuilder = attributeBuilder.Append(")]");
-        return builder.AppendCodeLine(attributeBuilder.ToString());
-    }
 
     private static SourceBuilder AppendEndpointMetadataAttribute(this SourceBuilder builder, EndpointTypeDescription type)
     {
