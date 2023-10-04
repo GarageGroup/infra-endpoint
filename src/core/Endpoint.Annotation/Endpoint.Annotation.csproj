@@ -8,7 +8,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GarageGroup.Infra</RootNamespace>
     <AssemblyName>GarageGroup.Infra.Endpoint.Annotation</AssemblyName>
-    <Version>0.4.3-build.1</Version>
+    <Version>0.4.3</Version>
   </PropertyGroup>
 
 </Project>

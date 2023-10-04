@@ -8,7 +8,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GarageGroup.Infra</RootNamespace>
     <AssemblyName>GarageGroup.Infra.Endpoint.TypeParser</AssemblyName>
-    <Version>0.2.1-build.1</Version>
+    <Version>0.2.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

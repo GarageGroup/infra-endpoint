@@ -8,11 +8,11 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GarageGroup.Infra</RootNamespace>
     <AssemblyName>GarageGroup.Infra.Endpoint.Schema.Base64String</AssemblyName>
-    <Version>0.2.3-build.1</Version>
+    <Version>0.2.3</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GarageGroup.Infra.Endpoint.SchemaProvider" Version="0.2.3-build.1" />
+    <PackageReference Include="GarageGroup.Infra.Endpoint.SchemaProvider" Version="0.2.3" />
   </ItemGroup>
 
 </Project>
