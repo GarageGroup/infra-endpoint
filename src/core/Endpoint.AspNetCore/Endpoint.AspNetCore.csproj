@@ -8,7 +8,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GarageGroup.Infra</RootNamespace>
     <AssemblyName>GarageGroup.Infra.Endpoint.AspNetCore</AssemblyName>
-    <Version>0.11.1</Version>
+    <Version>0.11.2-build.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="GarageGroup.Infra.Swagger.Builder.Abstractions" Version="2.2.2" />
-    <PackageReference Include="GarageGroup.Infra.Endpoint.Core" Version="0.8.1" />
+    <PackageReference Include="GarageGroup.Infra.Endpoint.Core" Version="0.8.2-build.2" />
     <PackageReference Include="PrimeFuncPack.Dependency.Core" Version="2.0.2" />
   </ItemGroup>
 
