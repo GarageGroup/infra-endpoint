@@ -104,7 +104,7 @@ partial class EndpointApplicationBuilder
     {
         if (httpResponse.Headers.ContainsKey(header.Key) is false)
         {
-            httpResponse.Headers.Add(header.Key, header.Value);
+            httpResponse.Headers.Append(header.Key, header.Value);
             return;
         }
 

@@ -122,9 +122,14 @@ partial class EndpointBuilder
             return InnerBuildSchemaFunction("CreateDateSchema");
         }
 
-        if (type.IsSystemType(nameof(DateTime)) || type.IsSystemType(nameof(DateTimeOffset)))
+        if (type.IsSystemType(nameof(DateTime)))
         {
             return InnerBuildSchemaFunction("CreateDateTimeSchema");
+        }
+
+        if (type.IsSystemType(nameof(DateTimeOffset)))
+        {
+            return InnerBuildSchemaFunction("CreateDateTimeOffsetSchema");
         }
 
         if (type.IsSystemType(nameof(TimeSpan)))
