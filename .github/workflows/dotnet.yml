@@ -27,7 +27,7 @@ jobs:
 
     - name: Add GarageGroup NuGet Source
       run: >
-        dotnet nuget add source ${{ secrets.GG_NUGET_SOURCE_URL }}
+        dotnet nuget add source ${{ vars.GG_NUGET_SOURCE_URL }}
         -n garage
         -u ${{ secrets.GG_NUGET_SOURCE_USER_NAME }}
         -p ${{ secrets.GG_NUGET_SOURCE_USER_PASSWORD }}
@@ -36,90 +36,68 @@ jobs:
     # Endpoint.Generator
 
     - name: Restore Endpoint.Generator
-      run: dotnet restore ./src/*/*/Endpoint.Generator.csproj
+      run: dotnet restore ./src/*/Endpoint.Generator.csproj
 
     - name: Build Endpoint.Generator
-      run: dotnet build ./src/*/*/Endpoint.Generator.csproj --no-restore  -c Release
+      run: dotnet build ./src/*/Endpoint.Generator.csproj --no-restore  -c Release
 
     - name: Pack Endpoint.Generator
-      run: dotnet pack ./src/*/*/Endpoint.Generator.csproj --no-restore -o ~/nuget  -c Release
+      run: dotnet pack ./src/*/Endpoint.Generator.csproj --no-restore -o ~/nuget  -c Release
 
     # Endpoint.Annotation
 
     - name: Restore Endpoint.Annotation
-      run: dotnet restore ./src/*/*/Endpoint.Annotation.csproj
+      run: dotnet restore ./src/*/Endpoint.Annotation.csproj
 
     - name: Build Endpoint.Annotation
-      run: dotnet build ./src/*/*/Endpoint.Annotation.csproj --no-restore  -c Release
+      run: dotnet build ./src/*/Endpoint.Annotation.csproj --no-restore  -c Release
 
     - name: Pack Endpoint.Annotation
-      run: dotnet pack ./src/*/*/Endpoint.Annotation.csproj --no-restore -o ~/nuget  -c Release
+      run: dotnet pack ./src/*/Endpoint.Annotation.csproj --no-restore -o ~/nuget  -c Release
 
     # Endpoint.Core
 
     - name: Restore Endpoint.Core
-      run: dotnet restore ./src/*/*/Endpoint.Core.csproj
+      run: dotnet restore ./src/*/Endpoint.Core.csproj
 
     - name: Build Endpoint.Core
-      run: dotnet build ./src/*/*/Endpoint.Core.csproj --no-restore  -c Release
+      run: dotnet build ./src/*/Endpoint.Core.csproj --no-restore  -c Release
 
     - name: Pack Endpoint.Core
-      run: dotnet pack ./src/*/*/Endpoint.Core.csproj --no-restore -o ~/nuget  -c Release
+      run: dotnet pack ./src/*/Endpoint.Core.csproj --no-restore -o ~/nuget  -c Release
 
     # Endpoint.AspNetCore
 
     - name: Restore Endpoint.AspNetCore
-      run: dotnet restore ./src/*/*/Endpoint.AspNetCore.csproj
+      run: dotnet restore ./src/*/Endpoint.AspNetCore.csproj
 
     - name: Build Endpoint.AspNetCore
-      run: dotnet build ./src/*/*/Endpoint.AspNetCore.csproj --no-restore  -c Release
+      run: dotnet build ./src/*/Endpoint.AspNetCore.csproj --no-restore  -c Release
 
     - name: Pack Endpoint.AspNetCore
-      run: dotnet pack ./src/*/*/Endpoint.AspNetCore.csproj --no-restore -o ~/nuget  -c Release
+      run: dotnet pack ./src/*/Endpoint.AspNetCore.csproj --no-restore -o ~/nuget  -c Release
 
     # Endpoint.SchemaProvider
 
     - name: Restore Endpoint.SchemaProvider
-      run: dotnet restore ./src/*/*/Endpoint.SchemaProvider.csproj
+      run: dotnet restore ./src/*/Endpoint.SchemaProvider.csproj
 
     - name: Build Endpoint.SchemaProvider
-      run: dotnet build ./src/*/*/Endpoint.SchemaProvider.csproj --no-restore  -c Release
+      run: dotnet build ./src/*/Endpoint.SchemaProvider.csproj --no-restore  -c Release
 
     - name: Pack Endpoint.SchemaProvider
-      run: dotnet pack ./src/*/*/Endpoint.SchemaProvider.csproj --no-restore -o ~/nuget  -c Release
+      run: dotnet pack ./src/*/Endpoint.SchemaProvider.csproj --no-restore -o ~/nuget  -c Release
 
     # Endpoint.TypeParser
 
     - name: Restore Endpoint.TypeParser
-      run: dotnet restore ./src/*/*/Endpoint.TypeParser.csproj
+      run: dotnet restore ./src/*/Endpoint.TypeParser.csproj
 
     - name: Build Endpoint.TypeParser
-      run: dotnet build ./src/*/*/Endpoint.TypeParser.csproj --no-restore  -c Release
+      run: dotnet build ./src/*/Endpoint.TypeParser.csproj --no-restore  -c Release
 
     - name: Pack Endpoint.TypeParser
-      run: dotnet pack ./src/*/*/Endpoint.TypeParser.csproj --no-restore -o ~/nuget  -c Release
-
-    # Endpoint.Schema.Base64String
-
-    - name: Restore Endpoint.Schema.Base64String
-      run: dotnet restore ./src/*/*/Endpoint.Schema.Base64String.csproj
-
-    - name: Build Endpoint.Schema.Base64String
-      run: dotnet build ./src/*/*/Endpoint.Schema.Base64String.csproj --no-restore  -c Release
-
-    - name: Pack Endpoint.Schema.Base64String
-      run: dotnet pack ./src/*/*/Endpoint.Schema.Base64String.csproj --no-restore -o ~/nuget  -c Release
-
-    # Endpoint.Schema.JsonStringValue
-
-    - name: Restore Endpoint.Schema.JsonStringValue
-      run: dotnet restore ./src/*/*/Endpoint.Schema.JsonStringValue.csproj
-
-    - name: Build Endpoint.Schema.JsonStringValue
-      run: dotnet build ./src/*/*/Endpoint.Schema.JsonStringValue.csproj --no-restore  -c Release
-
-    - name: Pack Endpoint.Schema.JsonStringValue
-      run: dotnet pack ./src/*/*/Endpoint.Schema.JsonStringValue.csproj --no-restore -o ~/nuget  -c Release
+      run: dotnet pack ./src/*/Endpoint.TypeParser.csproj --no-restore -o ~/nuget  -c Release
 
     # Push
 
@@ -127,6 +105,6 @@ jobs:
       if: ${{ github.ref == 'refs/heads/main' }}
       run: >
         dotnet nuget push "../../../nuget/*.nupkg"
-        -s ${{ secrets.GG_NUGET_SOURCE_URL }}
+        -s ${{ vars.GG_NUGET_SOURCE_URL }}
         -k ${{ secrets.GG_NUGET_SOURCE_USER_PASSWORD }}
         --skip-duplicate
