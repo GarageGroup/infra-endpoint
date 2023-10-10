@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
 using Microsoft.OpenApi.Models;
 
 namespace GarageGroup.Infra.Endpoint;
@@ -10,7 +11,7 @@ partial class EndpointMetadataHelper
         =>
         new Dictionary<string, OpenApiMediaType>
         {
-            [string.IsNullOrEmpty(contentType) ? "text/plain" : contentType] = new()
+            [string.IsNullOrEmpty(contentType) ? MediaTypeNames.Text.Plain : contentType] = new()
             {
                 Schema = schema
             }

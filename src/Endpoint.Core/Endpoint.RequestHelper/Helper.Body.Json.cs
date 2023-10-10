@@ -21,7 +21,7 @@ partial class EndpointRequestHelper
         }
         catch (Exception exception)
         {
-            return exception.ToFailure("Request body is incorrect");
+            return exception.ToFailure("Failed to deserialize the request body into JSON");
         }
     }
 }

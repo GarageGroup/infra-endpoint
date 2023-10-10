@@ -2,9 +2,13 @@ using Microsoft.CodeAnalysis;
 
 namespace GarageGroup.Infra;
 
-internal sealed record class JsonBodyPropertyDescription
+internal sealed record class BodyPropertyDescription
 {
-    public JsonBodyPropertyDescription(string propertyName, ISymbol propertySymbol, string jsonPropertyName, ITypeSymbol propertyType)
+    public BodyPropertyDescription(
+        string propertyName,
+        ISymbol propertySymbol,
+        string jsonPropertyName,
+        ITypeSymbol propertyType)
     {
         PropertyName = propertyName ?? string.Empty;
         PropertySymbol = propertySymbol;

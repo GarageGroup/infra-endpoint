@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace GarageGroup.Infra;
@@ -167,7 +169,7 @@ partial class EndpointBuilder
         return sourceBuilder
             .AppendCodeLine("RequestBody = new()")
             .BeginCodeBlock()
-            .AppendJsonPropertiesContent(requestBodyProperties)
+            .AppendBodyPropertiesContent(requestBodyProperties)
             .EndCodeBlock(',');
     }
 
@@ -197,7 +199,7 @@ partial class EndpointBuilder
         }
 
         var responseBodyType = type.GetResponseBodyType();
-        var responseJsonProperties = type.GetResponseJsonBodyProperties();
+        var responseBodyProperties = type.GetResponseBodyProperties();
 
         var successes = successDataDictionary.Select(GetValue).ToArray();
         foreach (var success in successes)
@@ -218,9 +220,9 @@ partial class EndpointBuilder
             {
                 sourceBuilder.AppendContent(responseBodyType);
             }
-            else if (responseJsonProperties.Count > 0)
+            else if (responseBodyProperties.Count > 0)
             {
-                sourceBuilder.AppendJsonPropertiesContent(responseJsonProperties);
+                sourceBuilder.AppendBodyPropertiesContent(responseBodyProperties);
             }
 
             sourceBuilder.EndCodeBlock(',');
@@ -312,15 +314,21 @@ partial class EndpointBuilder
 
         if (string.IsNullOrEmpty(requestBodySchema) is false)
         {
-            return sourceBuilder.AppendCodeLine($"Content = {requestBodySchema}.CreateContent({bodyType.ContentType.AsStringSourceCodeOrStringEmpty()})");
+            return sourceBuilder.AppendCodeLine(
+                $"Content = {requestBodySchema}.CreateContent({bodyType.ContentType.Name.AsStringSourceCodeOrStringEmpty()})");
         }
 
-        return sourceBuilder.AppendSchema("Content", bodyType.BodyType, 0, exampleValue, description).AppendCodeLine(
-            $".CreateContent({bodyType.ContentType.AsStringSourceCodeOrStringEmpty()})");
+        return sourceBuilder
+            .AppendSchema(
+                "Content", bodyType.BodyType, 0, exampleValue, description, default)
+            .AppendRootXmlSchemaIfNecessary(
+                bodyType.BodyType)
+            .AppendCodeLine(
+                $".CreateContent({bodyType.ContentType.Name.AsStringSourceCodeOrStringEmpty()})");
     }
 
-    private static SourceBuilder AppendJsonPropertiesContent(
-        this SourceBuilder sourceBuilder, IReadOnlyCollection<JsonBodyPropertyDescription> jsonProperties)
+    private static SourceBuilder AppendBodyPropertiesContent(
+        this SourceBuilder sourceBuilder, IReadOnlyCollection<BodyPropertyDescription> jsonProperties)
     {
         sourceBuilder
             .AppendCodeLine("Content = new OpenApiSchema")
@@ -336,7 +344,8 @@ partial class EndpointBuilder
             var exampleValue = property.PropertySymbol.GetExampleValue();
             var description = property.PropertySymbol.GetDescriptionValue();
 
-            sourceBuilder.AppendSchema(propertyName, property.PropertyType, 1, exampleValue, description);
+            sourceBuilder
+                .AppendSchema(propertyName, property.PropertyType, 1, exampleValue, description, property.PropertySymbol as IPropertySymbol);
         }
 
         return sourceBuilder
@@ -346,8 +355,19 @@ partial class EndpointBuilder
     }
 
     private static SourceBuilder AppendSchema(
-        this SourceBuilder builder, string parameterName, ITypeSymbol type, int level, string? exampleValue, string? description)
+        this SourceBuilder builder,
+        string parameterName,
+        ITypeSymbol type,
+        int level,
+        string? exampleValue,
+        string? description,
+        IPropertySymbol? property)
     {
+        if (property.IsXmlIgnored())
+        {
+            return builder;
+        }
+
         if (level > 0)
         {
             var usings = new List<string>();
@@ -356,12 +376,14 @@ partial class EndpointBuilder
 
             if (string.IsNullOrEmpty(simpleSchemaFunction) is false)
             {
-                return builder.AppendCodeLine($"{parameterName} = {simpleSchemaFunction},");
+                return builder.AppendXmlSchemaIfNecessary(
+                    $"{parameterName} = {simpleSchemaFunction}", property);
             }
 
             if (level >= MaxRecursiveSchemaLevel)
             {
-                return builder.AppendCodeLine($"{parameterName} = CreateDefaultSchema({type.IsNullable().ToStringValue()}),");
+                return builder.AppendXmlSchemaIfNecessary(
+                    $"{parameterName} = CreateDefaultSchema({type.IsNullable().ToStringValue()})", property);
             }
         }
 
@@ -379,11 +401,17 @@ partial class EndpointBuilder
         var collectionType = type.GetCollectionTypeOrDefault();
         if (collectionType is not null)
         {
-            return builder.AppendCodeLine("Type = \"array\",")
-                .AppendSchema("Items", collectionType, level, exampleValue, description).EndCodeBlock(afterSymbol);
+            return builder
+                .AppendCodeLine("Type = \"array\",")
+                .AppendSchema("Items", collectionType, level, exampleValue, description, property)
+                .AppendXmlSchemaAsPropertyIfNecessary(property)
+                .EndCodeBlock(afterSymbol);
         }
 
-        builder.AppendCodeLine("Type = \"object\",").AppendCodeLine("Properties = new Dictionary<string, OpenApiSchema>").BeginCodeBlock();
+        builder
+            .AppendCodeLine("Type = \"object\",")
+            .AppendCodeLine("Properties = new Dictionary<string, OpenApiSchema>")
+            .BeginCodeBlock();
 
         foreach (var jsonProperty in type.GetJsonProperties())
         {
@@ -392,9 +420,133 @@ partial class EndpointBuilder
             var jsonExampleValue = jsonProperty.GetExampleValue();
             var jsonDescription = jsonProperty.GetDescriptionValue();
 
-            builder.AppendSchema(propertyName, jsonProperty.Type, level, jsonExampleValue, jsonDescription);
+            builder.AppendSchema(propertyName, jsonProperty.Type, level, jsonExampleValue, jsonDescription, jsonProperty);
         }
 
         return builder.EndCodeBlock().EndCodeBlock(afterSymbol);
+    }
+
+    private static SourceBuilder AppendRootXmlSchemaIfNecessary(
+        this SourceBuilder builder, ITypeSymbol typeSymbol)
+    {
+        var xmlRootAttribute = typeSymbol.GetXmlRootAttribute();
+        if (xmlRootAttribute is null)
+        {
+            return builder;
+        }
+
+        return builder
+            .AppendCodeLine(".WithXml(")
+            .BeginArguments()
+            .AppendCodeLine("xml: new()")
+            .BeginCodeBlock()
+            .AppendXmlName(xmlRootAttribute)
+            .AppendXmlNamespace(xmlRootAttribute)
+            .AppendCodeLine("Wrapped = true")
+            .EndCodeBlock(')')
+            .EndArguments();
+    }
+
+    private static SourceBuilder AppendXmlSchemaAsPropertyIfNecessary(
+        this SourceBuilder builder, IPropertySymbol? property, string? afterSymbol = null)
+    {
+        if (property is null || property.ContainsXmlAttribute() is false)
+        {
+            return builder;
+        }
+
+        return builder
+            .AppendCodeLine("Xml = new()")
+            .BeginCodeBlock()
+            .AppendXmlSchemaPropertiesIfNecessary(property, true)
+            .EndCodeBlock(afterSymbol);
+    }
+
+    private static SourceBuilder AppendXmlSchemaIfNecessary(
+        this SourceBuilder builder, string codeLine, IPropertySymbol? property)
+    {
+        if (property is null || property.ContainsXmlAttribute() is false)
+        {
+            return builder.AppendCodeLine($"{codeLine},");
+        }
+
+        return builder
+            .AppendCodeLine(codeLine)
+            .AppendCodeLine(".WithXml(")
+            .BeginArguments()
+            .AppendCodeLine("xml: new()")
+            .BeginCodeBlock()
+            .AppendXmlSchemaPropertiesIfNecessary(property, false)
+            .EndCodeBlock("),")
+            .EndArguments();
+    }
+
+    private static SourceBuilder AppendXmlSchemaPropertiesIfNecessary(
+        this SourceBuilder builder, IPropertySymbol property, bool isObject)
+    {
+        var xmlElementAttribute = property.GetXmlElementAttribute();
+        if (xmlElementAttribute is not null)
+        {
+            return builder
+                .AppendXmlName(xmlElementAttribute)
+                .AppendXmlNamespace(xmlElementAttribute);
+        }
+
+        var xmlAttributeAttribute = property.GetXmlAttributeAttribute();
+        if (xmlAttributeAttribute is not null)
+        {
+            return builder
+                .AppendXmlName(xmlAttributeAttribute)
+                .AppendXmlNamespace(xmlAttributeAttribute)
+                .AppendCodeLine("Attribute = true");
+        }
+
+        if (isObject)
+        {
+            var xmlArrayAttribute = property.GetXmlArrayAttribute();
+            if (xmlArrayAttribute is not null)
+            {
+                return builder
+                    .AppendXmlName(xmlArrayAttribute)
+                    .AppendXmlNamespace(xmlArrayAttribute)
+                    .AppendCodeLine("Wrapped = true");
+            }
+        }
+        else
+        {
+            var xmlArrayItemAttribute = property.GetXmlArrayItemAttribute();
+            if (xmlArrayItemAttribute is not null)
+            {
+                return builder
+                    .AppendXmlName(xmlArrayItemAttribute)
+                    .AppendXmlNamespace(xmlArrayItemAttribute);
+            }
+        }
+
+        return builder;
+    }
+
+    private static SourceBuilder AppendXmlName(this SourceBuilder builder, AttributeData xmlAttribute)
+    {
+        var xmlElementName = xmlAttribute.GetAttributeValue(0, "ElementName")?.ToString();
+
+        if (string.IsNullOrEmpty(xmlElementName))
+        {
+            return builder;
+        }
+
+        return builder.AppendCodeLine($"Name = {xmlElementName.AsStringSourceCodeOrStringEmpty()},");
+    }
+
+    private static SourceBuilder AppendXmlNamespace(this SourceBuilder builder, AttributeData xmlAttribute)
+    {
+        var xmlNamespace = xmlAttribute.GetAttributePropertyValue("Namespace")?.ToString();
+
+        if (Uri.TryCreate(xmlNamespace, UriKind.Absolute, out var _) is false)
+        {
+            return builder;
+        }
+
+        return builder.AppendCodeLine($"Namespace = new({xmlNamespace.AsStringSourceCodeOrStringEmpty()})");
     }
 }

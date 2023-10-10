@@ -98,7 +98,7 @@ internal static partial class EndpointBuilder
         return new(
             propertyName: bodyParameters[0].Name,
             propertySymbol: bodyParameters[0],
-            contentType: attributeData?.GetAttributeValue(0)?.ToString(),
+            contentType: new(attributeData?.GetAttributeValue(0)?.ToString()),
             bodyType: bodyParameters[0].Type);
 
         static bool IsRootBodyInParameter(IParameterSymbol parameterSymbol)
@@ -110,17 +110,17 @@ internal static partial class EndpointBuilder
             parameterSymbol.GetAttributes().Any(IsJsonBodyInAttribute);
     }
 
-    private static IReadOnlyCollection<JsonBodyPropertyDescription> GetRequestJsonBodyProperties(this EndpointTypeDescription type)
+    private static IReadOnlyCollection<BodyPropertyDescription> GetRequestJsonBodyProperties(this EndpointTypeDescription type)
     {
         var constructorParameters = type.RequestType?.GetConstructor()?.Parameters;
         if (constructorParameters?.Length is not > 0)
         {
-            return Array.Empty<JsonBodyPropertyDescription>();
+            return Array.Empty<BodyPropertyDescription>();
         }
 
         return InnerGetProperties().ToArray();
 
-        IEnumerable<JsonBodyPropertyDescription> InnerGetProperties()
+        IEnumerable<BodyPropertyDescription> InnerGetProperties()
         {
             foreach (var parameter in constructorParameters)
             {
@@ -174,7 +174,7 @@ internal static partial class EndpointBuilder
         return new(
             propertyName: bodyProperties[0].Name,
             propertySymbol: bodyProperties[0],
-            contentType: attributeData?.GetAttributeValue(0)?.ToString(),
+            contentType: new(attributeData?.GetAttributeValue(0)?.ToString()),
             bodyType: bodyProperties[0].Type);
 
         static bool IsBodyOutProperty(IPropertySymbol propertySymbol)
@@ -186,17 +186,17 @@ internal static partial class EndpointBuilder
             propertySymbol.GetAttributes().Any(IsJsonBodyOutAttribute);
     }
 
-    private static IReadOnlyCollection<JsonBodyPropertyDescription> GetResponseJsonBodyProperties(this EndpointTypeDescription type)
+    private static IReadOnlyCollection<BodyPropertyDescription> GetResponseBodyProperties(this EndpointTypeDescription type)
     {
         var properties = type.ResponseType?.GetPublicReadableProperties();
         if (properties is null)
         {
-            return Array.Empty<JsonBodyPropertyDescription>();
+            return Array.Empty<BodyPropertyDescription>();
         }
 
         return InnerGetProperties().ToArray();
 
-        IEnumerable<JsonBodyPropertyDescription> InnerGetProperties()
+        IEnumerable<BodyPropertyDescription> InnerGetProperties()
         {
             foreach (var property in properties)
             {
