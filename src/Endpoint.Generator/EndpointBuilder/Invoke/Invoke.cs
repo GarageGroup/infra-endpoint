@@ -174,23 +174,31 @@ partial class EndpointBuilder
             sourceBuilder.AddUsings(requestBodyData.AllNamespaces);
             resultParameters.Add(parameter.Name);
 
-            var codeLine = new StringBuilder(
-                $"var {parameter.Name}Result = await request.DeserializeBodyAsync<{requestBodyData.DisplayedTypeName}>")
-            .Append(
-                "(jsonSerializerOptions, token).ConfigureAwait(false);")
-            .ToString();
+            var bodyResult = $"{parameter.Name}Result";
+            var requestType = requestBodyData.DisplayedTypeName;
 
-            sourceBuilder
-                .AppendCodeLine(codeLine).AppendCodeLine(
-                    $"if ({parameter.Name}Result.IsFailure)")
+            if (requestBody.ContentType.Kind is ContentKind.Xml)
+            {
+                sourceBuilder = sourceBuilder.AppendCodeLine(
+                    $"var {bodyResult} = await request.DeserializeXmlBodyAsync<{requestType}>(token).ConfigureAwait(false);");
+            }
+            else
+            {
+                sourceBuilder = sourceBuilder.AppendCodeLine(
+                    $"var {bodyResult} = await request.DeserializeBodyAsync<{requestType}>(jsonSerializerOptions, token).ConfigureAwait(false);");
+            }
+
+            sourceBuilder = sourceBuilder
+                .AppendCodeLine(
+                    $"if ({bodyResult}.IsFailure)")
                 .BeginCodeBlock()
                 .AppendCodeLine(
-                    $"return {parameter.Name}Result.FailureOrThrow();")
+                    $"return {bodyResult}.FailureOrThrow();")
                 .EndCodeBlock()
                 .AppendEmptyLine();
         }
 
-        sourceBuilder.AppendCodeLine($"return new {inTypeName}(").BeginArguments();
+        sourceBuilder = sourceBuilder.AppendCodeLine($"return new {inTypeName}(").BeginArguments();
 
         for (var i = 0; i < requestConstructor.Parameters.Length; i++)
         {
@@ -213,7 +221,7 @@ partial class EndpointBuilder
             =>
             EndpointAttributeHelper.IsRootBodyInAttribute(attributeData) || EndpointAttributeHelper.IsJsonBodyInAttribute(attributeData);
 
-        static bool IsJsonPropertyMatched(JsonBodyPropertyDescription jsonBodyProperty, IParameterSymbol parameter)
+        static bool IsJsonPropertyMatched(BodyPropertyDescription jsonBodyProperty, IParameterSymbol parameter)
             =>
             string.Equals(jsonBodyProperty.PropertyName, parameter.Name, StringComparison.InvariantCulture);
     }
@@ -233,7 +241,7 @@ partial class EndpointBuilder
             "var jsonDocument = jsonDocumentResult.SuccessOrThrow();");
 
     private static SourceBuilder AppendParseJsonDocumentParameter(
-        this SourceBuilder sourceBuilder, JsonBodyPropertyDescription jsonBodyProperty, List<string> resultParameters)
+        this SourceBuilder sourceBuilder, BodyPropertyDescription jsonBodyProperty, List<string> resultParameters)
     {
         var parameterName = jsonBodyProperty.PropertyName;
         resultParameters.Add(parameterName);
@@ -298,11 +306,11 @@ partial class EndpointBuilder
 
         var headers = type.GetHeaderOutProperties().Select(GetPropertyValue).ToList();
         var responseBodyType = type.GetResponseBodyType();
-        var responseBodyProperties = type.GetResponseJsonBodyProperties();
+        var responseBodyProperties = type.GetResponseBodyProperties();
 
-        if (string.IsNullOrEmpty(responseBodyType?.ContentType) is false)
+        if (string.IsNullOrEmpty(responseBodyType?.ContentType.Name) is false)
         {
-            headers.Add(new("\"Content-Type\"", $"\"{responseBodyType?.ContentType}\""));
+            headers.Add(new("\"Content-Type\"", $"\"{responseBodyType?.ContentType.Name}\""));
         }
         else if (responseBodyProperties.Count > 0)
         {
@@ -332,17 +340,22 @@ partial class EndpointBuilder
         {
             if (responseBodyType.BodyType.IsStreamType())
             {
-                return sourceBuilder.AppendCodeLine($"body: success.{responseBodyType.PropertyName});").EndArguments();
+                sourceBuilder = sourceBuilder.AppendCodeLine($"body: success.{responseBodyType.PropertyName});");
             }
-
-            if (responseBodyType.IsJsonType is false)
+            else if (responseBodyType.ContentType.Kind is ContentKind.Json)
             {
-                return sourceBuilder.AppendCodeLine($"body: success.{responseBodyType.PropertyName}.ToTextStream());").EndArguments();
+                sourceBuilder = sourceBuilder.AppendCodeLine($"body: success.{responseBodyType.PropertyName}.ToJsonStream(jsonSerializerOptions));");
+            }
+            else if (responseBodyType.ContentType.Kind is ContentKind.Xml)
+            {
+                sourceBuilder = sourceBuilder.AppendCodeLine($"body: success.{responseBodyType.PropertyName}.ToXmlStream());");
+            }
+            else
+            {
+                sourceBuilder = sourceBuilder.AppendCodeLine($"body: success.{responseBodyType.PropertyName}.ToTextStream());");
             }
 
-            return sourceBuilder.AppendCodeLine(
-                $"body: success.{responseBodyType.PropertyName}.ToJsonStream(jsonSerializerOptions));")
-            .EndArguments();
+            return sourceBuilder.EndArguments();
         }
 
         if (responseBodyProperties.Count is not > 0)
@@ -399,7 +412,7 @@ partial class EndpointBuilder
         }
     }
 
-    private static SourceBuilder AppendWriteJsonProperty(this SourceBuilder sourceBuilder, JsonBodyPropertyDescription jsonBodyProperty)
+    private static SourceBuilder AppendWriteJsonProperty(this SourceBuilder sourceBuilder, BodyPropertyDescription jsonBodyProperty)
     {
         var type = jsonBodyProperty.PropertyType;
         var nullableStruct = false;

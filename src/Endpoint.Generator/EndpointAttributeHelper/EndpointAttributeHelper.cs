@@ -28,7 +28,7 @@ internal static partial class EndpointAttributeHelper
 
     private const string SuccessAttribute = "SuccessAttribute";
 
-    private const string StringExampleAttribute = "StringExampleAttribute";
+    private const string ExampleAttribute = "ExampleAttributeBase";
 
     private const string SwaggerDescriptionAttribute = "SwaggerDescriptionAttribute";
 

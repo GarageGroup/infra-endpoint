@@ -208,11 +208,7 @@ partial class EndpointBuilder
     private static string BuildSchemaFunction(
         string functionName, List<string> usings, string? exmapleValue, string? description, bool isNullable)
     {
-        if (string.IsNullOrEmpty(exmapleValue) is false)
-        {
-            usings.Add("Microsoft.OpenApi.Any");
-        }
-        else
+        if (string.IsNullOrEmpty(exmapleValue))
         {
             exmapleValue = "default";
         }
@@ -227,14 +223,24 @@ partial class EndpointBuilder
 
     private static string? GetExampleValue(this ISymbol symbol)
     {
-        var stringExampleAttribute = symbol.GetAttributes().FirstOrDefault(IsStringExampleAttribute);
-        if (stringExampleAttribute is null)
+        var exampleAttribute = symbol.GetAttributes().FirstOrDefault(IsExampleAttribute);
+        if (exampleAttribute is null)
         {
             return null;
         }
 
-        var value = stringExampleAttribute.GetAttributeValue(0)?.ToString();
-        return $"new OpenApiString({value.AsStringSourceCodeOrStringEmpty()})";
+        var exampleType = exampleAttribute.AttributeClass?.Name.Replace("ExampleAttribute", string.Empty);
+
+        var value = exampleAttribute.GetAttributeValue(0);
+        var valueSourceCode = value switch
+        {
+            null => "null",
+            string => value.ToString().AsStringSourceCodeOrStringEmpty(),
+            _ => value.ToString()
+        };
+
+
+        return $"Create{exampleType}Example({valueSourceCode})";
     }
 
     private static string? GetDescriptionValue(this ISymbol symbol)
@@ -274,5 +280,71 @@ partial class EndpointBuilder
             new(
                 statusCode: attributeData?.GetAttributeValue(0, "StatusCode")?.ToString(),
                 description: attributeData?.GetAttributePropertyValue("Description")?.ToString());
+    }
+
+    private static AttributeData? GetXmlRootAttribute(this ITypeSymbol? type)
+    {
+        return type?.GetAttributes().FirstOrDefault(IsXmlAttributeAttribute);
+
+        static bool IsXmlAttributeAttribute(AttributeData attribute)
+            =>
+            attribute?.AttributeClass?.IsType("System.Xml.Serialization", "XmlRootAttribute") is true;
+    }
+
+    private static AttributeData? GetXmlElementAttribute(this IPropertySymbol? property)
+    {
+        return property?.GetAttributes().FirstOrDefault(IsXmlElementAttribute);
+
+        static bool IsXmlElementAttribute(AttributeData attribute)
+            =>
+            attribute?.AttributeClass?.IsType("System.Xml.Serialization", "XmlElementAttribute") is true;
+    }
+
+    private static AttributeData? GetXmlAttributeAttribute(this IPropertySymbol? property)
+    {
+        return property?.GetAttributes().FirstOrDefault(IsXmlAttributeAttribute);
+
+        static bool IsXmlAttributeAttribute(AttributeData attribute)
+            =>
+            attribute?.AttributeClass?.IsType("System.Xml.Serialization", "XmlAttributeAttribute") is true;
+    }
+
+    private static AttributeData? GetXmlArrayAttribute(this IPropertySymbol? property)
+    {
+        return property?.GetAttributes().FirstOrDefault(IsXmlAttributeAttribute);
+
+        static bool IsXmlAttributeAttribute(AttributeData attribute)
+            =>
+            attribute?.AttributeClass?.IsType("System.Xml.Serialization", "XmlArrayAttribute") is true;
+    }
+
+    private static AttributeData? GetXmlArrayItemAttribute(this IPropertySymbol? property)
+    {
+        return property?.GetAttributes().FirstOrDefault(IsXmlAttributeAttribute);
+
+        static bool IsXmlAttributeAttribute(AttributeData attribute)
+            =>
+            attribute?.AttributeClass?.IsType("System.Xml.Serialization", "XmlArrayItemAttribute") is true;
+    }
+
+    private static bool IsXmlIgnored(this IPropertySymbol? property)
+    {
+        return property?.GetAttributes().Any(IsXmlIgnoreAttribute) is true;
+
+        static bool IsXmlIgnoreAttribute(AttributeData attribute)
+            =>
+            attribute?.AttributeClass?.IsType("System.Xml.Serialization", "XmlIgnoreAttribute") is true;
+    }
+
+    private static bool ContainsXmlAttribute(this IPropertySymbol property)
+    {
+        return property.GetAttributes().Any(IsXmlAttribute) is true;
+
+        static bool IsXmlAttribute(AttributeData attribute)
+            =>
+            string.Equals(
+                attribute?.AttributeClass?.ContainingNamespace?.ToString(),
+                "System.Xml.Serialization",
+                StringComparison.InvariantCulture);
     }
 }
