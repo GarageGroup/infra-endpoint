@@ -208,11 +208,7 @@ partial class EndpointBuilder
     private static string BuildSchemaFunction(
         string functionName, List<string> usings, string? exmapleValue, string? description, bool isNullable)
     {
-        if (string.IsNullOrEmpty(exmapleValue) is false)
-        {
-            usings.Add("Microsoft.OpenApi.Any");
-        }
-        else
+        if (string.IsNullOrEmpty(exmapleValue))
         {
             exmapleValue = "default";
         }
@@ -227,14 +223,24 @@ partial class EndpointBuilder
 
     private static string? GetExampleValue(this ISymbol symbol)
     {
-        var stringExampleAttribute = symbol.GetAttributes().FirstOrDefault(IsStringExampleAttribute);
-        if (stringExampleAttribute is null)
+        var exampleAttribute = symbol.GetAttributes().FirstOrDefault(IsExampleAttribute);
+        if (exampleAttribute is null)
         {
             return null;
         }
 
-        var value = stringExampleAttribute.GetAttributeValue(0)?.ToString();
-        return $"new OpenApiString({value.AsStringSourceCodeOrStringEmpty()})";
+        var exampleType = exampleAttribute.AttributeClass?.Name.Replace("ExampleAttribute", string.Empty);
+
+        var value = exampleAttribute.GetAttributeValue(0);
+        var valueSourceCode = value switch
+        {
+            null => "null",
+            string => value.ToString().AsStringSourceCodeOrStringEmpty(),
+            _ => value.ToString()
+        };
+
+
+        return $"Create{exampleType}Example({valueSourceCode})";
     }
 
     private static string? GetDescriptionValue(this ISymbol symbol)
