@@ -201,7 +201,7 @@ internal static partial class EndpointBuilder
             foreach (var property in properties)
             {
                 var attributeData = property.GetAttributes().FirstOrDefault(IsJsonBodyOutAttribute);
-                if (attributeData is null)
+                if (attributeData is null || property.GetJsonIgnoreCondition() is JsonIgnoreCondition.Always)
                 {
                     continue;
                 }
@@ -366,4 +366,34 @@ internal static partial class EndpointBuilder
     private static string AsStringValueOrDefault(this string? source)
         =>
         source.AsStringSourceCodeOr("default");
+
+    private static JsonIgnoreCondition GetJsonIgnoreCondition(this IPropertySymbol? property)
+    {
+        var jsonIgnoreAttribute = property?.GetAttributes().FirstOrDefault(IsJsonIgnoreAttribute);
+        if (jsonIgnoreAttribute is null)
+        {
+            return JsonIgnoreCondition.Never;
+        }
+
+        return jsonIgnoreAttribute.GetAttributePropertyValue("Condition") switch
+        {
+            int condition => (JsonIgnoreCondition)condition,
+            _ => JsonIgnoreCondition.Always
+        };
+
+        static bool IsJsonIgnoreAttribute(AttributeData attribute)
+            =>
+            attribute?.AttributeClass?.IsType("System.Text.Json.Serialization", "JsonIgnoreAttribute") is true;
+    }
+
+    private enum JsonIgnoreCondition
+    {
+        Never,
+
+        Always,
+
+        WhenWritingDefault,
+
+        WhenWritingNull
+    }
 }
