@@ -414,6 +414,12 @@ partial class EndpointBuilder
 
     private static SourceBuilder AppendWriteJsonProperty(this SourceBuilder sourceBuilder, BodyPropertyDescription jsonBodyProperty)
     {
+        var ignoreCondition = (jsonBodyProperty.PropertySymbol as IPropertySymbol).GetJsonIgnoreCondition();
+        if (ignoreCondition is JsonIgnoreCondition.Always)
+        {
+            return sourceBuilder;
+        }
+
         var type = jsonBodyProperty.PropertyType;
         var nullableStruct = false;
 
@@ -427,41 +433,63 @@ partial class EndpointBuilder
         var propertyValue = nullableStruct ? conditionValue + ".Value" : conditionValue;
 
         var hasNullCheck = nullableStruct || jsonBodyProperty.PropertyType.IsReferenceType;
-        if (hasNullCheck)
+        var hasDefaultCheck = hasNullCheck is false && type.IsValueType && ignoreCondition is JsonIgnoreCondition.WhenWritingDefault;
+
+        var hasCheck = hasNullCheck || hasDefaultCheck;
+        if (hasCheck)
         {
-            sourceBuilder.AppendCodeLine($"if ({conditionValue} is not null)").BeginCodeBlock();
+            if (hasNullCheck)
+            {
+                sourceBuilder = sourceBuilder
+                    .AppendCodeLine($"if ({conditionValue} is not null)");
+            }
+            else
+            {
+                var typeDisplayedData = type.GetDisplayedData();
+
+                sourceBuilder = sourceBuilder
+                    .AddUsings(typeDisplayedData.AllNamespaces)
+                    .AppendCodeLine(
+                        $"if ({conditionValue} != default({typeDisplayedData.DisplayedTypeName}))");
+            }
+
+            sourceBuilder = sourceBuilder.BeginCodeBlock();
         }
 
         var jsonNameValue = jsonBodyProperty.JsonPropertyName.AsStringSourceCodeOrStringEmpty();
 
         if (type.IsSystemType(nameof(String)))
         {
-            sourceBuilder.AppendCodeLine($"writer.WriteString({jsonNameValue}, {propertyValue});");
+            sourceBuilder = sourceBuilder.AppendCodeLine($"writer.WriteString({jsonNameValue}, {propertyValue});");
         }
         else if (type.IsSystemType(nameof(Guid)))
         {
-            sourceBuilder.AppendCodeLine($"writer.WriteString({jsonNameValue}, {propertyValue}.ToString());");
+            sourceBuilder = sourceBuilder.AppendCodeLine($"writer.WriteString({jsonNameValue}, {propertyValue}.ToString());");
         }
         else if (type.IsSystemType(nameof(Boolean)))
         {
-            sourceBuilder.AppendCodeLine($"writer.WriteBoolean({jsonNameValue}, {propertyValue});");
+            sourceBuilder = sourceBuilder.AppendCodeLine($"writer.WriteBoolean({jsonNameValue}, {propertyValue});");
         }
         else if (type.IsAnySystemType(GetJsonNumberSystemTypes()))
         {
-            sourceBuilder.AppendCodeLine($"writer.WriteNumber({jsonNameValue}, {propertyValue});");
+            sourceBuilder = sourceBuilder.AppendCodeLine($"writer.WriteNumber({jsonNameValue}, {propertyValue});");
         }
         else
         {
-            sourceBuilder.AppendCodeLine(
+            sourceBuilder = sourceBuilder.AppendCodeLine(
                 $"writer.WritePropertyName({jsonNameValue});")
             .AppendCodeLine(
                 $"JsonSerializer.Serialize(writer, {propertyValue}, jsonSerializerOptions);");
         }
 
-        if (hasNullCheck)
+        if (hasCheck)
         {
-            sourceBuilder
-                .EndCodeBlock()
+            sourceBuilder = sourceBuilder.EndCodeBlock();
+        }
+
+        if (hasNullCheck && ignoreCondition is JsonIgnoreCondition.Never)
+        {
+            sourceBuilder = sourceBuilder
                 .AppendCodeLine("else")
                 .BeginCodeBlock()
                 .AppendCodeLine($"writer.WriteNull({jsonNameValue});")
