@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
@@ -236,9 +237,9 @@ partial class EndpointBuilder
         {
             null => "null",
             string => value.ToString().AsStringSourceCodeOrStringEmpty(),
+            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
             _ => value.ToString()
         };
-
 
         return $"Create{exampleType}Example({valueSourceCode})";
     }
