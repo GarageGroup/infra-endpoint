@@ -236,7 +236,7 @@ partial class EndpointBuilder
         var valueSourceCode = value switch
         {
             null => "null",
-            string => value.ToString().AsStringSourceCodeOrStringEmpty(),
+            string text => text.AsStringSourceCodeOrStringEmpty(),
             IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
             _ => value.ToString()
         };
