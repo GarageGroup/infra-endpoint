@@ -309,7 +309,7 @@ partial class EndpointBuilder
         var description = bodyType.PropertySymbol.GetDescriptionValue();
 
         var requestBodySchema = bodyType.BodyType.GetSimpleSchemaFunction(usings, exampleValue, description);
-        sourceBuilder.AddUsings(usings);
+        sourceBuilder = sourceBuilder.AddUsings(usings);
 
         if (string.IsNullOrEmpty(requestBodySchema) is false)
         {
@@ -329,7 +329,7 @@ partial class EndpointBuilder
     private static SourceBuilder AppendBodyPropertiesContent(
         this SourceBuilder sourceBuilder, IReadOnlyCollection<BodyPropertyDescription> jsonProperties)
     {
-        sourceBuilder
+        sourceBuilder = sourceBuilder
             .AppendCodeLine("Content = new OpenApiSchema")
             .BeginCodeBlock()
             .AppendCodeLine("Type = \"object\",")
@@ -371,7 +371,7 @@ partial class EndpointBuilder
         {
             var usings = new List<string>();
             var simpleSchemaFunction = type.GetSimpleSchemaFunction(usings, exampleValue, description);
-            builder.AddUsings(usings);
+            builder = builder.AddUsings(usings);
 
             if (string.IsNullOrEmpty(simpleSchemaFunction) is false)
             {
@@ -390,7 +390,7 @@ partial class EndpointBuilder
         var schemaType = level > 0 ?  "new()" : "new OpenApiSchema";
         level++;
 
-        builder
+        builder = builder
             .AppendCodeLine($"{parameterName} = {schemaType}")
             .BeginCodeBlock()
             .AppendCodeLine($"Nullable = {type.IsNullable().ToStringValue()},");
@@ -407,8 +407,13 @@ partial class EndpointBuilder
                 .EndCodeBlock(afterSymbol);
         }
 
-        builder
-            .AppendCodeLine("Type = \"object\",")
+        builder = builder.AppendCodeLine("Type = \"object\",");
+        if (string.IsNullOrEmpty(exampleValue) is false)
+        {
+            builder = builder.AppendCodeLine($"Example = {exampleValue},");
+        }
+
+        builder = builder
             .AppendCodeLine("Properties = new Dictionary<string, OpenApiSchema>")
             .BeginCodeBlock();
 
