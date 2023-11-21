@@ -23,11 +23,7 @@ partial class EndpointApplicationBuilder
         ArgumentNullException.ThrowIfNull(app);
         ArgumentNullException.ThrowIfNull(endpointResolver);
 
-#if NET7_0_OR_GREATER
         var metadata = TEndpoint.GetEndpointMetadata();
-#else
-        var metadata = IEndpointMetadataProvider.GetEndpointMetadata<TEndpoint>();
-#endif
 
         var verb = metadata.Method.ToString("F").ToUpperInvariant();
         var template = metadata.Route;
