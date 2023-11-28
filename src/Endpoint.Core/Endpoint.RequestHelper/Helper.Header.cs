@@ -7,5 +7,5 @@ partial class EndpointRequestHelper
 {
     public static string? GetHeaderValue([AllowNull] this EndpointRequest request, string name)
         =>
-        request?.Headers.GetValueOrAbsent(name).OrDefault();
+        request?.Headers.FirstOrAbsent(header => string.Equals(header.Key, name, System.StringComparison.InvariantCultureIgnoreCase)).OrDefault().Value;
 }
