@@ -8,7 +8,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GarageGroup.Infra</RootNamespace>
     <AssemblyName>GarageGroup.Infra.Endpoint.AspNetCore</AssemblyName>
-    <Version>0.14.1</Version>
+    <Version>0.15.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
