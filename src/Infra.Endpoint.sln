@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Endpoint.SchemaProvider", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Endpoint.TypeParser", "Endpoint.TypeParser\Endpoint.TypeParser.csproj", "{F224F56A-E123-4295-9C41-8D13B01AA24F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Endpoint.AspNetCore.Generator", "Endpoint.AspNetCore.Generator\Endpoint.AspNetCore.Generator.csproj", "{54FCAA09-9526-415D-8662-8F9FECE0F19C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{F224F56A-E123-4295-9C41-8D13B01AA24F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F224F56A-E123-4295-9C41-8D13B01AA24F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F224F56A-E123-4295-9C41-8D13B01AA24F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54FCAA09-9526-415D-8662-8F9FECE0F19C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54FCAA09-9526-415D-8662-8F9FECE0F19C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54FCAA09-9526-415D-8662-8F9FECE0F19C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54FCAA09-9526-415D-8662-8F9FECE0F19C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

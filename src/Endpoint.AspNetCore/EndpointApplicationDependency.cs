@@ -15,6 +15,6 @@ public static class EndpointApplicationDependency
         ArgumentNullException.ThrowIfNull(dependency);
         ArgumentNullException.ThrowIfNull(applicationBuilder);
 
-        return applicationBuilder.UseEndpoint(dependency.Resolve);
+        return applicationBuilder.InternalUseEndpoint(dependency.Resolve);
     }
 }

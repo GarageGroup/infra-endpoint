@@ -23,13 +23,20 @@ partial class EndpointApplicationBuilder
         ArgumentNullException.ThrowIfNull(app);
         ArgumentNullException.ThrowIfNull(endpointResolver);
 
+        return app.InternalUseEndpoint(endpointResolver);
+    }
+
+    internal static TApplicationBuilder InternalUseEndpoint<TApplicationBuilder, TEndpoint>(
+        this TApplicationBuilder app, Func<IServiceProvider, TEndpoint> endpointResolver)
+        where TApplicationBuilder : IApplicationBuilder
+        where TEndpoint : class, IEndpoint
+    {
         var metadata = TEndpoint.GetEndpointMetadata();
 
         var verb = metadata.Method.ToString("F").ToUpperInvariant();
         var template = metadata.Route;
 
         var route = new RouteBuilder(app).MapVerb(verb, template, InnerInvokeAsync).Build();
-
         _ = app.UseRouter(route);
 
         if (app is ISwaggerBuilder swaggerBuilder)
@@ -40,22 +47,17 @@ partial class EndpointApplicationBuilder
         return app;
 
         Task InnerInvokeAsync(HttpContext context)
-            =>
-            context.InvokeAsync(endpointResolver);
-    }
-
-    private static Task InvokeAsync<TEndpoint>(this HttpContext context, Func<IServiceProvider, TEndpoint> endpointResolver)
-        where TEndpoint : class, IEndpoint
-    {
-        if (context.RequestAborted.IsCancellationRequested)
         {
-            return Task.CompletedTask;
-        }
+            if (context.RequestAborted.IsCancellationRequested)
+            {
+                return Task.FromCanceled(context.RequestAborted);
+            }
 
-        return InnerInvokeAsync(context, endpointResolver.Invoke(context.RequestServices));
+            return InvokeAsync(context, endpointResolver.Invoke(context.RequestServices));
+        }
     }
 
-    private static async Task InnerInvokeAsync(HttpContext context, IEndpoint endpoint)
+    private static async Task InvokeAsync(HttpContext context, IEndpoint endpoint)
     {
         var request = CreateEndpointRequest(context.Request, context.User);
         var response = await endpoint.InvokeAsync(request, context.RequestAborted).ConfigureAwait(false);
