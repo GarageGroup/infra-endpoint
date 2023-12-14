@@ -66,6 +66,17 @@ jobs:
     - name: Pack Endpoint.Core
       run: dotnet pack ./src/*/Endpoint.Core.csproj --no-restore -o ~/nuget  -c Release
 
+    # Endpoint.AspNetCore.Generator
+
+    - name: Restore Endpoint.AspNetCore.Generator
+      run: dotnet restore ./src/*/Endpoint.AspNetCore.Generator.csproj
+
+    - name: Build Endpoint.AspNetCore.Generator
+      run: dotnet build ./src/*/Endpoint.AspNetCore.Generator.csproj --no-restore  -c Release
+
+    - name: Pack Endpoint.AspNetCore.Generator
+      run: dotnet pack ./src/*/Endpoint.AspNetCore.Generator.csproj --no-restore -o ~/nuget  -c Release
+
     # Endpoint.AspNetCore
 
     - name: Restore Endpoint.AspNetCore
