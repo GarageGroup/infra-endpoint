@@ -375,13 +375,13 @@ partial class EndpointBuilder
 
             if (string.IsNullOrEmpty(simpleSchemaFunction) is false)
             {
-                return builder.AppendXmlSchemaIfNecessary(
+                return builder.AppendSchemaIfNecessary(
                     $"{parameterName} = {simpleSchemaFunction}", property);
             }
 
             if (level >= MaxRecursiveSchemaLevel)
             {
-                return builder.AppendXmlSchemaIfNecessary(
+                return builder.AppendSchemaIfNecessary(
                     $"{parameterName} = CreateDefaultSchema({type.IsNullable().ToStringValue()})", property);
             }
         }
@@ -466,21 +466,31 @@ partial class EndpointBuilder
             .EndCodeBlock(afterSymbol);
     }
 
-    private static SourceBuilder AppendXmlSchemaIfNecessary(
+    private static SourceBuilder AppendSchemaIfNecessary(
         this SourceBuilder builder, string codeLine, IPropertySymbol? property)
     {
-        if (property is null || property.ContainsXmlAttribute() is false)
+        var isDeprecated = property?.GetObsoleteData() is not null;
+        var isXmlSchema = property?.ContainsXmlAttribute() is true;
+
+        if (isDeprecated is false && isXmlSchema is false)
         {
             return builder.AppendCodeLine($"{codeLine},");
         }
 
+        builder = builder.AppendCodeLine(codeLine);
+
+        if (isDeprecated && isXmlSchema is false)
+        {
+            return builder.AppendCodeLine(".Deprecate(),");
+        }
+
         return builder
-            .AppendCodeLine(codeLine)
+            .AppendCodeLine(".Deprecate()")
             .AppendCodeLine(".WithXml(")
             .BeginArguments()
             .AppendCodeLine("xml: new()")
             .BeginCodeBlock()
-            .AppendXmlSchemaPropertiesIfNecessary(property, false)
+            .AppendXmlSchemaPropertiesIfNecessary(property!, false)
             .EndCodeBlock("),")
             .EndArguments();
     }

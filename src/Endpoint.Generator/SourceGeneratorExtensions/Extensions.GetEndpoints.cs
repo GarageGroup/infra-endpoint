@@ -7,7 +7,7 @@ namespace GarageGroup.Infra;
 
 using static EndpointAttributeHelper;
 
-internal static partial class SourceGeneratorExtensions
+partial class SourceGeneratorExtensions
 {
     private const string EndpointAttributeName = "GarageGroup.Infra.EndpointAttribute";
 
@@ -47,10 +47,10 @@ internal static partial class SourceGeneratorExtensions
         var tags = typeSymbol.GetEndpointTags().ToArray();
         if (tags.Length is 0)
         {
-            tags = new EndpointTag[]
-            {
+            tags =
+            [
                 new(string.Empty, null)
-            };
+            ];
         }
 
         return new()
@@ -124,25 +124,6 @@ internal static partial class SourceGeneratorExtensions
         static bool IsPublicOrInternal(IPropertySymbol property)
             =>
             property.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
-    }
-
-    private static ObsoleteData? GetObsoleteData(this INamedTypeSymbol typeSymbol)
-    {
-        var obsoleteAttributeData = typeSymbol.GetAttributes().FirstOrDefault(IsObsoleteAttribute);
-        if (obsoleteAttributeData is null)
-        {
-            return null;
-        }
-
-        return new(
-            message: obsoleteAttributeData.GetAttributeValue(0)?.ToString(),
-            isError: obsoleteAttributeData.GetAttributeValue(1) as bool?,
-            diagnosticId: obsoleteAttributeData.GetAttributePropertyValue("DiagnosticId")?.ToString(),
-            urlFormat: obsoleteAttributeData.GetAttributePropertyValue("UrlFormat")?.ToString());
-
-        static bool IsObsoleteAttribute(AttributeData attributeData)
-            =>
-            attributeData.AttributeClass?.IsSystemType("ObsoleteAttribute") is true;
     }
 
     private static string GetMethodName(object? source)
