@@ -6,7 +6,11 @@ namespace GarageGroup.Infra.Endpoint;
 
 partial class EndpointRequestHelper
 {
-    public static async ValueTask<string> ReadStringAsync(this EndpointRequest? request, CancellationToken _)
+    public static ValueTask<string> ReadStringAsync(this EndpointRequest? request, CancellationToken cancellationToken)
+        =>
+        request.InnerReadStringAsync(cancellationToken);
+
+    private static async ValueTask<string> InnerReadStringAsync(this EndpointRequest? request, CancellationToken cancellationToken)
     {
         if (request?.Body is null)
         {
@@ -14,6 +18,6 @@ partial class EndpointRequestHelper
         }
 
         using var reader = new StreamReader(request.Body);
-        return await reader.ReadToEndAsync().ConfigureAwait(false);
+        return await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
     }
 }

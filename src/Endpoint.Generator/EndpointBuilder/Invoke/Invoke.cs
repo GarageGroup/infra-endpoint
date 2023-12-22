@@ -185,7 +185,8 @@ partial class EndpointBuilder
             else
             {
                 sourceBuilder = sourceBuilder.AppendCodeLine(
-                    $"var {bodyResult} = await request.DeserializeBodyAsync<{requestType}>(jsonSerializerOptions, token).ConfigureAwait(false);");
+                    $"var {bodyResult} = await request.DeserializeBodyAsync<{requestType}>(jsonSerializerOptions, logger, token)" +
+                    ".ConfigureAwait(false);");
             }
 
             sourceBuilder = sourceBuilder
@@ -229,7 +230,7 @@ partial class EndpointBuilder
     private static SourceBuilder AppendParseJsonDocument(this SourceBuilder sourceBuilder)
         =>
         sourceBuilder.AppendCodeLine(
-            "var jsonDocumentResult = await request.ParseDocumentAsync(token).ConfigureAwait(false);")
+            "var jsonDocumentResult = await request.ParseDocumentAsync(logger, token).ConfigureAwait(false);")
         .AppendCodeLine(
             "if (jsonDocumentResult.IsFailure)")
         .BeginCodeBlock()
@@ -282,7 +283,7 @@ partial class EndpointBuilder
             }
 
             var nullableSign = isNullable ? "?" : string.Empty;
-            return $"DeserializeOrFailure<{typeData.DisplayedTypeName}{nullableSign}>({jsonPropertyValue}, jsonSerializerOptions)";
+            return $"DeserializeOrFailure<{typeData.DisplayedTypeName}{nullableSign}>({jsonPropertyValue}, jsonSerializerOptions, logger)";
         }
     }
 
