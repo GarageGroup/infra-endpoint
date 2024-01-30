@@ -14,6 +14,7 @@ partial class EndpointDeserializer
         =>
         jsonElement.ValueKind switch
         {
+            JsonValueKind.Null => string.Empty,
             JsonValueKind.String => jsonElement.GetString() ?? string.Empty,
             _ => CreateValueKindFailure(propertyName, JsonValueKind.String)
         };
