@@ -34,5 +34,7 @@ public enum FailureStatusCode
 
     Locked = 423,
 
+    UpgradeRequired = 426,
+
     TooManyRequests = 429
 }

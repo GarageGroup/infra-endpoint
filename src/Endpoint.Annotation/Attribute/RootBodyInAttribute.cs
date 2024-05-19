@@ -5,13 +5,9 @@ using System.Net.Mime;
 namespace GarageGroup.Infra;
 
 [AttributeUsage(AttributeTargets.Parameter)]
-public sealed class RootBodyInAttribute : Attribute
+public sealed class RootBodyInAttribute([AllowNull] string contentType = RootBodyInAttribute.DefaultContentType) : Attribute
 {
     private const string DefaultContentType = MediaTypeNames.Application.Json;
 
-    public RootBodyInAttribute([AllowNull] string contentType = DefaultContentType)
-        =>
-        ContentType = string.IsNullOrEmpty(contentType) ? DefaultContentType : contentType;
-
-    public string ContentType { get; }
+    public string ContentType { get; } = string.IsNullOrEmpty(contentType) ? DefaultContentType : contentType;
 }

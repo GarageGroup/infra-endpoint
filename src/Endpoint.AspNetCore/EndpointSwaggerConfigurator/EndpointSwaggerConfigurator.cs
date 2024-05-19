@@ -27,8 +27,12 @@ internal static partial class EndpointSwaggerConfigurator
     {
         return source.ToDictionary(GetKey, GetValue);
 
-        static TKey GetKey(KeyValuePair<TKey, TValue> kv) => kv.Key;
+        static TKey GetKey(KeyValuePair<TKey, TValue> kv)
+            =>
+            kv.Key;
 
-        static TValue GetValue(KeyValuePair<TKey, TValue> kv) => kv.Value;
+        static TValue GetValue(KeyValuePair<TKey, TValue> kv)
+            =>
+            kv.Value;
     }
 }

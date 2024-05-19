@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 
@@ -19,7 +18,7 @@ internal sealed class ExportedTypesCollector : SymbolVisitor
 
     public IReadOnlyCollection<INamedTypeSymbol> GetNonStaticTypes()
         =>
-        exportedTypes.ToArray();
+        [.. exportedTypes];
 
     public override void VisitAssembly(IAssemblySymbol symbol)
     {

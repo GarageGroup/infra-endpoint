@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net7.0;net8.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <InvariantGlobalization>true</InvariantGlobalization>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>GarageGroup.Infra</RootNamespace>
     <AssemblyName>GarageGroup.Infra.Endpoint.Core</AssemblyName>
-    <Version>0.14.1</Version>
+    <Version>0.14.2-build.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,9 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GarageGroup.Infra.Endpoint.Annotation" Version="0.6.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
-    <PackageReference Include="Microsoft.OpenApi" Version="1.6.13" />
+    <PackageReference Include="GarageGroup.Infra.Endpoint.Annotation" Version="0.6.1-build.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+    <PackageReference Include="Microsoft.OpenApi" Version="1.6.14" />
     <PackageReference Include="PrimeFuncPack.Core.Failure" Version="2.2.0" />
     <PackageReference Include="PrimeFuncPack.Core.Optional" Version="2.1.0" />
     <PackageReference Include="PrimeFuncPack.Core.Result" Version="2.0.2" />

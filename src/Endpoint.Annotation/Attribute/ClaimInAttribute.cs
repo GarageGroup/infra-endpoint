@@ -4,11 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace GarageGroup.Infra;
 
 [AttributeUsage(AttributeTargets.Parameter)]
-public sealed class ClaimInAttribute : Attribute
+public sealed class ClaimInAttribute([AllowNull] string claimType = null) : Attribute
 {
-    public ClaimInAttribute([AllowNull] string claimType = null)
-        =>
-        ClaimType = string.IsNullOrEmpty(claimType) ? null : claimType;
-
-    public string? ClaimType { get; }
+    public string? ClaimType { get; } = string.IsNullOrEmpty(claimType) ? null : claimType;
 }

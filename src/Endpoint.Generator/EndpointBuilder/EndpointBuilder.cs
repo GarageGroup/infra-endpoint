@@ -339,6 +339,10 @@ internal static partial class EndpointBuilder
             "206"   => "PartialContent",
             "207"   => "MultiStatus",
             "208"   => "AlreadyReported",
+            "300"   => "Ambiguous",
+            "302"   => "Redirect",
+            "303"   => "RedirectMethod",
+            "307"   => "RedirectKeepVerb",
             "400"   => "BadRequest",
             "401"   => "Unauthorized",
             "402"   => "PaymentRequired",
@@ -354,6 +358,7 @@ internal static partial class EndpointBuilder
             "417"   => "ExpectationFailed",
             "422"   => "UnprocessableEntity",
             "423"   => "Locked",
+            "426"   => "UpgradeRequired",
             "429"   => "TooManyRequests",
             "500"   => "InternalServerError",
             _       => successStatusCode ?? string.Empty

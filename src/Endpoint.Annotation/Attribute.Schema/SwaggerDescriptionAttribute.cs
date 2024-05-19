@@ -3,11 +3,7 @@ using System;
 namespace GarageGroup.Infra;
 
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property)]
-public sealed class SwaggerDescriptionAttribute : Attribute
+public sealed class SwaggerDescriptionAttribute(string value) : Attribute
 {
-    public SwaggerDescriptionAttribute(string value)
-        =>
-        Value = value ?? string.Empty;
-
-    public string Value { get; }
+    public string Value { get; } = value ?? string.Empty;
 }

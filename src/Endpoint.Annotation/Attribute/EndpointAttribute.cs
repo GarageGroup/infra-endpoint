@@ -3,17 +3,11 @@ using System;
 namespace GarageGroup.Infra;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-public sealed class EndpointAttribute : Attribute
+public sealed class EndpointAttribute(EndpointMethod method, string route) : Attribute
 {
-    public EndpointAttribute(EndpointMethod method, string route)
-    {
-        Method = method;
-        Route = route ?? string.Empty;
-    }
+    public EndpointMethod Method { get; } = method;
 
-    public EndpointMethod Method { get; }
-
-    public string Route { get; }
+    public string Route { get; } = route ?? string.Empty;
 
     public string? Summary { get; set; }
 

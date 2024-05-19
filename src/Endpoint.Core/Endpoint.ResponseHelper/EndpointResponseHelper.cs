@@ -2,8 +2,6 @@ using System.Collections.Generic;
 
 namespace GarageGroup.Infra.Endpoint;
 
-using IKeyValueCollection = IReadOnlyCollection<KeyValuePair<string, string?>>;
-
 public static partial class EndpointResponseHelper
 {
     private const int BadRequestStatusCode = 400;
@@ -14,13 +12,13 @@ public static partial class EndpointResponseHelper
 
     private const string ProblemJsonContentType = "application/problem+json";
 
-    private static readonly IKeyValueCollection problemJsonHeaders;
+    private static readonly IReadOnlyCollection<KeyValuePair<string, string?>> problemJsonHeaders;
 
     static EndpointResponseHelper()
         =>
-        problemJsonHeaders = new KeyValuePair<string, string?>[]
-        {
+        problemJsonHeaders =
+        [
             new(ContentTypeHeaderName, ProblemJsonContentType),
             new(ContentTypeHeaderName, ResponseEncoding)
-        };
+        ];
 }

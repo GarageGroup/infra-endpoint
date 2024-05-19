@@ -5,13 +5,13 @@ namespace GarageGroup.Infra.Endpoint;
 partial class EndpointDeserializer
 {
     public static JsonSerializerOptions CreateDeafultOptions()
-    {
-        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        =>
+        new(JsonSerializerDefaults.Web)
         {
-            AllowTrailingCommas = true
+            AllowTrailingCommas = true,
+            Converters =
+            {
+                new EndpointEnumJsonConverterFactory()
+            }
         };
-
-        options.Converters.Add(new EndpointEnumJsonConverterFactory());
-        return options;
-    }
 }

@@ -11,26 +11,23 @@ partial class EndpointBuilder
 {
     private static string[] GetParserSystemTypes()
         =>
-        new[]
-        {
+        [
             nameof(Boolean), nameof(Byte), "DateOnly", nameof(DateTime), nameof(DateTimeOffset), nameof(Decimal), nameof(Double),
             nameof(Guid), nameof(Int16), nameof(Int32), nameof(Int64), nameof(Single), "TimeOnly", nameof(TimeSpan)
-        };
+        ];
 
     private static string[] GetJsonDeserializerSystemTypes()
         =>
-        new[]
-        {
+        [
             nameof(Boolean), nameof(Byte), "DateOnly", nameof(DateTime), nameof(DateTimeOffset), nameof(Decimal), nameof(Double),
             nameof(Guid), nameof(Int16), nameof(Int32), nameof(Int64), nameof(Single), "TimeOnly", nameof(TimeSpan)
-        };
+        ];
 
     private static string[] GetJsonNumberSystemTypes()
         =>
-        new[]
-        {
+        [
             nameof(Byte), nameof(Decimal), nameof(Double), nameof(Int16), nameof(Int32), nameof(Int64), nameof(Single)
-        };
+        ];
 
     private static string GetMethodFuncName(this EndpointTypeDescription type)
         =>
@@ -65,6 +62,7 @@ partial class EndpointBuilder
                 }
 
                 var headerName = headerAttribute.GetAttributeValue(0, "HeaderName")?.ToString();
+
                 yield return new(
                     key: string.IsNullOrEmpty(headerName) ? property.Name : headerName!,
                     value: property);
