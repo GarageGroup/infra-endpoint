@@ -75,7 +75,7 @@ internal static partial class EndpointBuilder
 
         static bool IsBodyInAttribute(AttributeData attributeData)
             =>
-            IsJsonBodyInAttribute(attributeData) || IsRootBodyInAttribute(attributeData);
+            IsJsonBodyInAttribute(attributeData) || IsFormBodyInAttribute(attributeData) || IsRootBodyInAttribute(attributeData);
     }
 
     private static BodyTypeDescription? GetRequestBodyType(this EndpointTypeDescription type)
@@ -93,12 +93,12 @@ internal static partial class EndpointBuilder
             throw new InvalidOperationException("There must be only one request body parameter");
         }
 
-        var attributeData = bodyParameters[0].GetAttributes().FirstOrDefault(IsRootBodyInAttribute);
+        var rootBodyAttribute = bodyParameters[0].GetAttributes().FirstOrDefault(IsRootBodyInAttribute);
 
         return new(
             propertyName: bodyParameters[0].Name,
             propertySymbol: bodyParameters[0],
-            contentType: new(attributeData?.GetAttributeValue(0)?.ToString()),
+            contentType: new(rootBodyAttribute?.GetAttributeValue(0)?.ToString()),
             bodyType: bodyParameters[0].Type);
 
         static bool IsRootBodyInParameter(IParameterSymbol parameterSymbol)
@@ -110,21 +110,29 @@ internal static partial class EndpointBuilder
             parameterSymbol.GetAttributes().Any(IsJsonBodyInAttribute);
     }
 
-    private static IReadOnlyCollection<BodyPropertyDescription> GetRequestJsonBodyProperties(this EndpointTypeDescription type)
+    private static IReadOnlyCollection<BodyPropertyDescription> GetRequestBodyProperties(this EndpointTypeDescription type)
     {
         var constructorParameters = type.RequestType?.GetConstructor()?.Parameters;
         if (constructorParameters?.Length is not > 0)
         {
-            return Array.Empty<BodyPropertyDescription>();
+            return [];
         }
 
-        return InnerGetProperties().ToArray();
+        var jsonProperties = InnerGetProperties(IsJsonBodyInAttribute, BodyPropertyKind.Json).ToArray();
+        var formProperties = InnerGetProperties(IsFormBodyInAttribute, BodyPropertyKind.Form).ToArray();
 
-        IEnumerable<BodyPropertyDescription> InnerGetProperties()
+        if (jsonProperties.Length > 0 && formProperties.Length > 0)
+        {
+            throw new InvalidOperationException("There must be only either json or form parameters in one request type");
+        }
+
+        return jsonProperties.Length > 0 ? jsonProperties : formProperties;
+
+        IEnumerable<BodyPropertyDescription> InnerGetProperties(Func<AttributeData, bool> predicate, BodyPropertyKind propertyKind)
         {
             foreach (var parameter in constructorParameters)
             {
-                var attributeData = parameter.GetAttributes().FirstOrDefault(IsJsonBodyInAttribute);
+                var attributeData = parameter.GetAttributes().FirstOrDefault(predicate);
                 if (attributeData is null)
                 {
                     continue;
@@ -134,9 +142,10 @@ internal static partial class EndpointBuilder
 
                 yield return new(
                     propertyName: parameter.Name,
+                    bodyParameterName: string.IsNullOrEmpty(propertyName) ? parameter.Name : propertyName!,
                     propertySymbol: parameter,
-                    jsonPropertyName: string.IsNullOrEmpty(propertyName) ? parameter.Name : propertyName!,
-                    propertyType: parameter.Type);
+                    propertyType: parameter.Type,
+                    propertyKind: propertyKind);
             }
         }
     }
@@ -191,7 +200,7 @@ internal static partial class EndpointBuilder
         var properties = type.ResponseType?.GetPublicReadableProperties();
         if (properties is null)
         {
-            return Array.Empty<BodyPropertyDescription>();
+            return [];
         }
 
         return InnerGetProperties().ToArray();
@@ -210,9 +219,10 @@ internal static partial class EndpointBuilder
 
                 yield return new(
                     propertyName: property.Name,
+                    bodyParameterName: string.IsNullOrEmpty(propertyName) ? property.GetJsonPropertyName() : propertyName!,
                     propertySymbol: property,
-                    jsonPropertyName: string.IsNullOrEmpty(propertyName) ? property.GetJsonPropertyName() : propertyName!,
-                    propertyType: property.Type);
+                    propertyType: property.Type,
+                    propertyKind: BodyPropertyKind.Json);
             }
         }
     }

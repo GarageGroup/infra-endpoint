@@ -51,9 +51,9 @@ partial class EndpointBuilder
 
         IEnumerable<KeyValuePair<string, IPropertySymbol>> InnerGetHeaderOutProperties()
         {
-            var properties = type?.ResponseType?.GetMembers().OfType<IPropertySymbol>().Where(IsPublic).Where(IsReadable);
+            var properties = type?.ResponseType?.GetMembers().OfType<IPropertySymbol>().Where(IsPublic).Where(IsReadable) ?? [];
 
-            foreach (var property in properties ?? Enumerable.Empty<IPropertySymbol>())
+            foreach (var property in properties)
             {
                 var headerAttribute = property.GetAttributes().FirstOrDefault(IsHeaderOutAttribute);
                 if (headerAttribute is null)
@@ -108,31 +108,33 @@ partial class EndpointBuilder
 
     private static string GetRequestFunctionValue(this IParameterSymbol parameter)
     {
-        if (parameter.GetAttributes().FirstOrDefault(IsRouteInAttribute) is AttributeData routeInAttribute)
+        var attributes = parameter.GetAttributes();
+
+        if (attributes.FirstOrDefault(IsRouteInAttribute) is AttributeData routeInAttribute)
         {
             var name = routeInAttribute.ConstructorArguments.FirstOrDefault().Value?.ToString();
-            return $"GetRouteValue({GetParameterName(name).AsStringSourceCodeOrStringEmpty()})";
+            return $"request.GetRouteValue({GetParameterName(name).AsStringSourceCodeOrStringEmpty()})";
         }
-        
-        if (parameter.GetAttributes().FirstOrDefault(IsQueryInAttribute) is AttributeData queryInAttribute)
+
+        if (attributes.FirstOrDefault(IsQueryInAttribute) is AttributeData queryInAttribute)
         {
             var name = queryInAttribute.ConstructorArguments.FirstOrDefault().Value?.ToString();
-            return $"GetQueryParameterValue({GetParameterName(name).AsStringSourceCodeOrStringEmpty()})";
+            return $"request.GetQueryParameterValue({GetParameterName(name).AsStringSourceCodeOrStringEmpty()})";
         }
 
-        if (parameter.GetAttributes().FirstOrDefault(IsHeaderInAttribute) is AttributeData headerInAttribute)
+        if (attributes.FirstOrDefault(IsHeaderInAttribute) is AttributeData headerInAttribute)
         {
             var name = headerInAttribute.ConstructorArguments.FirstOrDefault().Value?.ToString();
-            return $"GetHeaderValue({GetParameterName(name).AsStringSourceCodeOrStringEmpty()})";
+            return $"request.GetHeaderValue({GetParameterName(name).AsStringSourceCodeOrStringEmpty()})";
         }
 
-        if (parameter.GetAttributes().FirstOrDefault(IsClaimInAttribute) is AttributeData claimInAttribute)
+        if (attributes.FirstOrDefault(IsClaimInAttribute) is AttributeData claimInAttribute)
         {
             var name = claimInAttribute.ConstructorArguments.FirstOrDefault().Value?.ToString();
-            return $"GetClaimValue({GetParameterName(name).AsStringSourceCodeOrStringEmpty()})";
+            return $"request.GetClaimValue({GetParameterName(name).AsStringSourceCodeOrStringEmpty()})";
         }
 
-        return $"GetQueryParameterValue({parameter.Name.AsStringSourceCodeOrStringEmpty()})";
+        return $"request.GetQueryParameterValue({parameter.Name.AsStringSourceCodeOrStringEmpty()})";
 
         string GetParameterName(string? fromAttribute)
             =>

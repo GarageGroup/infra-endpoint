@@ -6,21 +6,25 @@ internal sealed record class BodyPropertyDescription
 {
     public BodyPropertyDescription(
         string propertyName,
+        string bodyParameterName,
         ISymbol propertySymbol,
-        string jsonPropertyName,
-        ITypeSymbol propertyType)
+        ITypeSymbol propertyType,
+        BodyPropertyKind propertyKind)
     {
         PropertyName = propertyName ?? string.Empty;
+        BodyParameterName = bodyParameterName ?? string.Empty;
         PropertySymbol = propertySymbol;
-        JsonPropertyName = jsonPropertyName ?? string.Empty;
         PropertyType = propertyType;
+        PropertyKind = propertyKind;
     }
 
     public string PropertyName { get; }
 
+    public string BodyParameterName { get; }
+
     public ISymbol PropertySymbol { get; }
 
-    public string JsonPropertyName { get; }
-
     public ITypeSymbol PropertyType { get; }
+
+    public BodyPropertyKind PropertyKind { get; }
 }

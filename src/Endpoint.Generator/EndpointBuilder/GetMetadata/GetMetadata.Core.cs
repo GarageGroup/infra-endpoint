@@ -12,17 +12,7 @@ partial class EndpointBuilder
 {
     private static OperationParameterDescription? GetOperationParameterDescription(IParameterSymbol parameterSymbol, List<string> usings)
     {
-        if (parameterSymbol.GetAttributes().Any(IsRootBodyInAttribute))
-        {
-            return null;
-        }
-
-        if (parameterSymbol.GetAttributes().Any(IsJsonBodyInAttribute))
-        {
-            return null;
-        }
-
-        if (parameterSymbol.GetAttributes().Any(IsClaimInAttribute))
+        if (parameterSymbol.GetAttributes().Any(IsExcludedParameter))
         {
             return null;
         }
@@ -79,6 +69,10 @@ partial class EndpointBuilder
             name: parameterName,
             schemaFunction: schemaFunction,
             description: null);
+
+        static bool IsExcludedParameter(AttributeData attribute)
+            =>
+            IsRootBodyInAttribute(attribute) || IsJsonBodyInAttribute(attribute) || IsFormBodyInAttribute(attribute) || IsClaimInAttribute(attribute);
     }
 
     private static string GetArrayOrDefaultSchemaFunction(
@@ -266,10 +260,10 @@ partial class EndpointBuilder
             var successData = GetSuccessData(type.ResponseType?.GetAttributes().FirstOrDefault(IsSuccessAttribute));
             if (successData is not null)
             {
-                return new[] { successData };
+                return [successData];
             }
 
-            return Array.Empty<SuccessData>();
+            return [];
         }
 
         return successStatusType.GetEnumFields().Select(GetSuccessAttribute).Select(GetSuccessData).ToArray();
