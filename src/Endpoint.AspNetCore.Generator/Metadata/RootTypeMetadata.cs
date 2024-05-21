@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace GarageGroup.Infra;
 
@@ -14,7 +13,7 @@ internal sealed record class RootTypeMetadata
         Namespace = @namespace ?? string.Empty;
         TypeName = typeName ?? string.Empty;
         ProviderType = providerType;
-        ResolverMethodNames = resolverMethodNames ?? Array.Empty<string>();
+        ResolverMethodNames = resolverMethodNames ?? [];
     }
 
     public string Namespace { get; }

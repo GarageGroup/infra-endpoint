@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -12,7 +11,7 @@ public sealed record EndpointResponse
     public EndpointResponse(int statusCode, [AllowNull] IKeyValueCollection headers, Stream? body)
     {
         StatusCode = statusCode;
-        Headers = headers ?? Array.Empty<KeyValuePair<string, string?>>();
+        Headers = headers ?? [];
         Body = body;
     }
 

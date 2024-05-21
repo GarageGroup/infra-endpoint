@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis;
 
 namespace GarageGroup.Infra;
+
+using static EndpointAttributeHelper;
 
 partial class EndpointBuilder
 {
@@ -51,7 +52,7 @@ partial class EndpointBuilder
     private static SourceBuilder AppendInvokeAsyncBlock(this SourceBuilder sourceBuilder, EndpointTypeDescription type)
     {
         var requestBody = type.GetRequestBodyType();
-        var requestBodyProperties = type.GetRequestJsonBodyProperties();
+        var requestBodyProperties = type.GetRequestBodyProperties();
 
         if (requestBody is null && requestBodyProperties.Count is not > 0)
         {
@@ -118,30 +119,45 @@ partial class EndpointBuilder
         var resultParameters = new List<string>();
 
         var requestBody = type.GetRequestBodyType();
-        var requestJsonProperties = type.GetRequestJsonBodyProperties();
+        var requestProperties = type.GetRequestBodyProperties();
 
-        var useJsonDocument = false;
+        var useBodyDocument = false;
 
         foreach (var parameter in requestConstructor.Parameters)
         {
-            if (parameter.GetAttributes().Any(IsBodyAttribute) is false)
+            if (parameter.GetAttributes().Any(IsRootBodyAttribute) is false)
             {
-                sourceBuilder.AppendParseRequestParameter(parameter, resultParameters).AppendEmptyLine();
+                var requestFunctionValue = parameter.GetRequestFunctionValue();
+                sourceBuilder.AppendParseRequestParameter(parameter.Type, parameter.Name, requestFunctionValue, resultParameters).AppendEmptyLine();
                 continue;
             }
 
             var nullable = parameter.NullableAnnotation is NullableAnnotation.Annotated ? string.Empty : "!";
 
-            var jsonProperty = requestJsonProperties.FirstOrDefault(p => IsJsonPropertyMatched(p, parameter));
-            if (jsonProperty is not null)
+            var bodyProperty = requestProperties.FirstOrDefault(p => IsBodyPropertyMatched(p, parameter));
+            if (bodyProperty is not null)
             {
-                if (useJsonDocument is false)
+                if (useBodyDocument is false)
                 {
-                    sourceBuilder.AppendParseJsonDocument().AppendEmptyLine();
-                    useJsonDocument = true;
+                    var parseAsyncFunctionValue = bodyProperty.PropertyKind switch
+                    {
+                        BodyPropertyKind.Form => "ReadFormDataAsync(token)",
+                        _ => "ParseDocumentAsync(logger, token)"
+                    };
+
+                    sourceBuilder.AppendParseBodyDocument(parseAsyncFunctionValue).AppendEmptyLine();
+                    useBodyDocument = true;
                 }
 
-                sourceBuilder.AppendParseJsonDocumentParameter(jsonProperty, resultParameters).AppendEmptyLine();
+                if (bodyProperty.PropertyKind is BodyPropertyKind.Form)
+                {
+                    sourceBuilder.AppendParseFormDocumentParameter(bodyProperty, resultParameters).AppendEmptyLine();
+                }
+                else
+                {
+                    sourceBuilder.AppendParseJsonDocumentParameter(bodyProperty, resultParameters).AppendEmptyLine();
+                }
+
                 continue;
             }
 
@@ -218,28 +234,28 @@ partial class EndpointBuilder
 
         return sourceBuilder.EndArguments().EndCodeBlock();
 
-        static bool IsBodyAttribute(AttributeData attributeData)
+        static bool IsRootBodyAttribute(AttributeData attributeData)
             =>
-            EndpointAttributeHelper.IsRootBodyInAttribute(attributeData) || EndpointAttributeHelper.IsJsonBodyInAttribute(attributeData);
+            IsRootBodyInAttribute(attributeData) || IsJsonBodyInAttribute(attributeData) || IsFormBodyInAttribute(attributeData);
 
-        static bool IsJsonPropertyMatched(BodyPropertyDescription jsonBodyProperty, IParameterSymbol parameter)
+        static bool IsBodyPropertyMatched(BodyPropertyDescription bodyProperty, IParameterSymbol parameter)
             =>
-            string.Equals(jsonBodyProperty.PropertyName, parameter.Name, StringComparison.InvariantCulture);
+            string.Equals(bodyProperty.PropertyName, parameter.Name, StringComparison.InvariantCulture);
     }
 
-    private static SourceBuilder AppendParseJsonDocument(this SourceBuilder sourceBuilder)
+    private static SourceBuilder AppendParseBodyDocument(this SourceBuilder sourceBuilder, string parseAsyncFunctionValue)
         =>
         sourceBuilder.AppendCodeLine(
-            "var jsonDocumentResult = await request.ParseDocumentAsync(logger, token).ConfigureAwait(false);")
+            $"var bodyDocumentResult = await request.{parseAsyncFunctionValue}.ConfigureAwait(false);")
         .AppendCodeLine(
-            "if (jsonDocumentResult.IsFailure)")
+            "if (bodyDocumentResult.IsFailure)")
         .BeginCodeBlock()
         .AppendCodeLine(
-            "return jsonDocumentResult.FailureOrThrow();")
+            "return bodyDocumentResult.FailureOrThrow();")
         .EndCodeBlock()
         .AppendEmptyLine()
         .AppendCodeLine(
-            "var jsonDocument = jsonDocumentResult.SuccessOrThrow();");
+            "var bodyDocument = bodyDocumentResult.SuccessOrThrow();");
 
     private static SourceBuilder AppendParseJsonDocumentParameter(
         this SourceBuilder sourceBuilder, BodyPropertyDescription jsonBodyProperty, List<string> resultParameters)
@@ -247,14 +263,14 @@ partial class EndpointBuilder
         var parameterName = jsonBodyProperty.PropertyName;
         resultParameters.Add(parameterName);
 
-        var jsonPropertyValue = jsonBodyProperty.JsonPropertyName.AsStringSourceCodeOrStringEmpty();
+        var jsonPropertyValue = jsonBodyProperty.BodyParameterName.AsStringSourceCodeOrStringEmpty();
         var isNullable = jsonBodyProperty.PropertyType.IsNullable();
 
         var nullableValue = isNullable ? "Nullable" : string.Empty;
         var type = jsonBodyProperty.PropertyType.GetNullableStructType() ?? jsonBodyProperty.PropertyType;
 
         return sourceBuilder.AppendCodeLine(
-            $"var {parameterName}Result = jsonDocument.{GetDeserializeFunctionValue()};")
+            $"var {parameterName}Result = bodyDocument.{GetDeserializeFunctionValue()};")
         .AppendCodeLine(
             $"if ({parameterName}Result.IsFailure)")
         .BeginCodeBlock()
@@ -285,6 +301,16 @@ partial class EndpointBuilder
             var nullableSign = isNullable ? "?" : string.Empty;
             return $"DeserializeOrFailure<{typeData.DisplayedTypeName}{nullableSign}>({jsonPropertyValue}, jsonSerializerOptions, logger)";
         }
+    }
+
+    private static SourceBuilder AppendParseFormDocumentParameter(
+        this SourceBuilder sourceBuilder, BodyPropertyDescription formProperty, List<string> resultParameters)
+    {
+        var propertyName = formProperty.PropertyName;
+        var propertyType = formProperty.PropertyType;
+
+        var requestFunctionValue = $"bodyDocument.Get({formProperty.BodyParameterName.AsStringSourceCodeOrStringEmpty()})";
+        return sourceBuilder.AppendParseRequestParameter(propertyType, propertyName, requestFunctionValue, resultParameters);
     }
 
     private static SourceBuilder AppendMapSuccessBlock(this SourceBuilder sourceBuilder, EndpointTypeDescription type)
@@ -457,7 +483,7 @@ partial class EndpointBuilder
             sourceBuilder = sourceBuilder.BeginCodeBlock();
         }
 
-        var jsonNameValue = jsonBodyProperty.JsonPropertyName.AsStringSourceCodeOrStringEmpty();
+        var jsonNameValue = jsonBodyProperty.BodyParameterName.AsStringSourceCodeOrStringEmpty();
 
         if (type.IsSystemType(nameof(String)))
         {
@@ -600,27 +626,26 @@ partial class EndpointBuilder
         .EndLambda();
     }
 
-    private static SourceBuilder AppendParseRequestParameter(this SourceBuilder builder, IParameterSymbol parameter, List<string> resultParameters)
+    private static SourceBuilder AppendParseRequestParameter(
+        this SourceBuilder builder, ITypeSymbol parameterType, string parameterName, string requestFunctionValue, List<string> resultParameters)
     {
-        var requestFunctionValue = parameter.GetRequestFunctionValue();
-
-        if (parameter.Type.IsSystemType(nameof(String)))
+        if (parameterType.IsSystemType(nameof(String)))
         {
-            return builder.AppendCodeLine($"var {parameter.Name} = request.{requestFunctionValue} ?? string.Empty;");
+            return builder.AppendCodeLine($"var {parameterName} = {requestFunctionValue} ?? string.Empty;");
         }
 
-        var nullableValue = parameter.Type.IsNullable() ? "Nullable" : string.Empty;
-        var type = parameter.Type.GetNullableStructType() ?? parameter.Type;
+        var nullableValue = parameterType.IsNullable() ? "Nullable" : string.Empty;
+        var type = parameterType.GetNullableStructType() ?? parameterType;
 
-        resultParameters.Add(parameter.Name);
+        resultParameters.Add(parameterName);
 
         return builder.AppendCodeLine(
-            $"var {parameter.Name}Result = {GetParserFunctionName()}(request.{requestFunctionValue});")
+            $"var {parameterName}Result = {GetParserFunctionName()}({requestFunctionValue});")
         .AppendCodeLine(
-            $"if ({parameter.Name}Result.IsFailure)")
+            $"if ({parameterName}Result.IsFailure)")
         .BeginCodeBlock()
         .AppendCodeLine(
-            $"return {parameter.Name}Result.FailureOrThrow();")
+            $"return {parameterName}Result.FailureOrThrow();")
         .EndCodeBlock();
 
         string GetParserFunctionName()

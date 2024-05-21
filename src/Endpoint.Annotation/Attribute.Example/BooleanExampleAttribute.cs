@@ -3,11 +3,7 @@
 namespace GarageGroup.Infra;
 
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property)]
-public sealed class BooleanExampleAttribute : ExampleAttributeBase
+public sealed class BooleanExampleAttribute(bool value) : ExampleAttributeBase
 {
-    public BooleanExampleAttribute(bool value)
-        =>
-        Value = value;
-
-    public bool Value { get; }
+    public bool Value { get; } = value;
 }

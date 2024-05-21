@@ -78,7 +78,7 @@ partial class EndpointBuilder
         }
 
         var tags = type.Tags.ToArray();
-        sourceBuilder.AppendCodeLine("Tags = new List<OpenApiTag>").BeginCodeBlock();
+        sourceBuilder.AppendCodeLine("Tags =").BeginCollectionExpression();
 
         for (var i = 0; i < tags.Length; i++)
         {
@@ -100,7 +100,7 @@ partial class EndpointBuilder
             }
         }
 
-        return sourceBuilder.EndCodeBlock(',');
+        return sourceBuilder.EndCollectionExpression(',');
     }
 
     private static SourceBuilder AppendOperationParameters(this SourceBuilder sourceBuilder, EndpointTypeDescription type)
@@ -116,7 +116,7 @@ partial class EndpointBuilder
             return sourceBuilder;
         }
 
-        sourceBuilder.AppendCodeLine("Parameters = new OpenApiParameter[]").BeginCodeBlock();
+        sourceBuilder.AppendCodeLine("Parameters =").BeginCollectionExpression();
 
         for (var i = 0; i < parameterDescriptions.Length; i++)
         {
@@ -140,7 +140,7 @@ partial class EndpointBuilder
             }
         }
 
-        return sourceBuilder.EndCodeBlock(',');
+        return sourceBuilder.EndCollectionExpression(',');
 
         OperationParameterDescription? InnerGetParameterDescription(IParameterSymbol parameterSymbol)
             =>
@@ -159,7 +159,7 @@ partial class EndpointBuilder
             return sourceBuilder.AppendCodeLine("RequestBody = new()").BeginCodeBlock().AppendContent(requestBodyType).EndCodeBlock(',');
         }
 
-        var requestBodyProperties = type.GetRequestJsonBodyProperties();
+        var requestBodyProperties = type.GetRequestBodyProperties();
         if (requestBodyProperties.Count is not > 0)
         {
             return sourceBuilder;
@@ -327,7 +327,7 @@ partial class EndpointBuilder
     }
 
     private static SourceBuilder AppendBodyPropertiesContent(
-        this SourceBuilder sourceBuilder, IReadOnlyCollection<BodyPropertyDescription> jsonProperties)
+        this SourceBuilder sourceBuilder, IReadOnlyCollection<BodyPropertyDescription> bodyProperties)
     {
         sourceBuilder = sourceBuilder
             .AppendCodeLine("Content = new OpenApiSchema")
@@ -336,9 +336,9 @@ partial class EndpointBuilder
             .AppendCodeLine("Properties = new Dictionary<string, OpenApiSchema>")
             .BeginCodeBlock();
 
-        foreach (var property in jsonProperties)
+        foreach (var property in bodyProperties)
         {
-            var propertyName = "[" + property.JsonPropertyName.AsStringSourceCodeOrStringEmpty() + "]";
+            var propertyName = "[" + property.BodyParameterName.AsStringSourceCodeOrStringEmpty() + "]";
 
             var exampleValue = property.PropertySymbol.GetExampleValue();
             var description = property.PropertySymbol.GetDescriptionValue();
@@ -347,10 +347,16 @@ partial class EndpointBuilder
                 .AppendSchema(propertyName, property.PropertyType, 1, exampleValue, description, property.PropertySymbol as IPropertySymbol);
         }
 
+        var contentType = bodyProperties.FirstOrDefault()?.PropertyKind switch
+        {
+            BodyPropertyKind.Form => "application/x-www-form-urlencoded",
+            _ => "application/json"
+        };
+
         return sourceBuilder
             .EndCodeBlock()
             .EndCodeBlock()
-            .AppendCodeLine($".CreateContent(\"application/json\")");
+            .AppendCodeLine($".CreateContent(\"{contentType}\")");
     }
 
     private static SourceBuilder AppendSchema(

@@ -12,7 +12,7 @@ partial class EndpointParser
     {
         if (source is null || source.Any() is false)
         {
-            return Result.Success<IReadOnlyCollection<T>>(Array.Empty<T>());
+            return Result.Success<IReadOnlyCollection<T>>([]);
         }
 
         var items = new List<T>();

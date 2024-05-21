@@ -3,11 +3,7 @@
 namespace GarageGroup.Infra;
 
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property)]
-public sealed class DoubleExampleAttribute : ExampleAttributeBase
+public sealed class DoubleExampleAttribute(double value) : ExampleAttributeBase
 {
-    public DoubleExampleAttribute(double value)
-        =>
-        Value = value;
-
-    public double Value { get; }
+    public double Value { get; } = value;
 }

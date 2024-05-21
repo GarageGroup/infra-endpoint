@@ -4,13 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 namespace GarageGroup.Infra;
 
 [AttributeUsage(AttributeTargets.Property)]
-public sealed class HeaderOutAttribute : Attribute
+public sealed class HeaderOutAttribute([AllowNull] string headerName = null) : Attribute
 {
-    public HeaderOutAttribute([AllowNull] string headerName = null)
-        =>
-        HeaderName = string.IsNullOrEmpty(headerName) ? null : headerName;
-
-    public string? HeaderName { get; }
+    public string? HeaderName { get; } = string.IsNullOrEmpty(headerName) ? null : headerName;
 
     public string? Description { get; set; }
 }

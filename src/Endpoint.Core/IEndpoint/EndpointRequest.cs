@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -10,15 +9,11 @@ using IKeyValueCollection = IReadOnlyCollection<KeyValuePair<string, string?>>;
 
 public sealed record class EndpointRequest
 {
-    private static readonly IKeyValueCollection EmptyKeyValueCollection;
-
     private static readonly ClaimsPrincipal EmptyPrincipal;
 
     static EndpointRequest()
-    {
-        EmptyKeyValueCollection = Array.Empty<KeyValuePair<string, string?>>();
+        =>
         EmptyPrincipal = new();
-    }
 
     public EndpointRequest(
         [AllowNull] IKeyValueCollection headers,
@@ -27,9 +22,9 @@ public sealed record class EndpointRequest
         [AllowNull] ClaimsPrincipal user,
         Stream? body)
     {
-        Headers = headers ?? EmptyKeyValueCollection;
-        QueryParameters = queryParameters ?? EmptyKeyValueCollection;
-        RouteValues = routeValues ?? EmptyKeyValueCollection;
+        Headers = headers ?? [];
+        QueryParameters = queryParameters ?? [];
+        RouteValues = routeValues ?? [];
         User = user ?? EmptyPrincipal;
         Body = body;
     }

@@ -14,6 +14,8 @@ internal static partial class EndpointAttributeHelper
 
     private const string JsonBodyOutAttribute = "JsonBodyOutAttribute";
 
+    private const string FormBodyInAttribute = "FormBodyInAttribute";
+
     private const string ClaimInAttribute = "ClaimInAttribute";
 
     private const string HeaderInAttribute = "HeaderInAttribute";

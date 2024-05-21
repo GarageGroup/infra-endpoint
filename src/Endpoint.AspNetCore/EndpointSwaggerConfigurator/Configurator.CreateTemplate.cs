@@ -23,11 +23,11 @@ partial class EndpointSwaggerConfigurator
 
         if (metadata.Operation.Tags?.Count > 0)
         {
-            document.Tags ??= new List<OpenApiTag>();
+            document.Tags ??= [];
             document.Tags = document.Tags.InsertTags(metadata.Operation.Tags);
         }
 
-        var paths = document.Paths ?? new OpenApiPaths();
+        var paths = document.Paths ?? [];
         paths = paths.InsertPaths(metadata);
 
         if (paths.Count > 0)

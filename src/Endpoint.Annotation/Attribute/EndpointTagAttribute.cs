@@ -3,13 +3,9 @@ using System;
 namespace GarageGroup.Infra;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = true)]
-public sealed class EndpointTagAttribute : Attribute
+public sealed class EndpointTagAttribute(string name) : Attribute
 {
-    public EndpointTagAttribute(string name)
-        =>
-        Name = name ?? string.Empty;
-
-    public string Name { get; }
+    public string Name { get; } = name ?? string.Empty;
 
     public string? Description { get; set; }
 }

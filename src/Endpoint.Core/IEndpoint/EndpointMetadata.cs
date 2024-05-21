@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.OpenApi.Models;
@@ -24,7 +23,7 @@ public sealed record class EndpointMetadata
         Summary = string.IsNullOrEmpty(summary) ? null : summary;
         Description = string.IsNullOrEmpty(description) ? null : description;
         Operation = operation ?? EmptyOperation;
-        Schemas = schemas ?? Array.Empty<KeyValuePair<string, OpenApiSchema>>();
+        Schemas = schemas ?? [];
     }
 
     public EndpointMethod Method { get; }

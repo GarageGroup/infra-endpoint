@@ -4,11 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace GarageGroup.Infra;
 
 [AttributeUsage(AttributeTargets.Parameter)]
-public sealed class JsonBodyInAttribute : Attribute
+public sealed class JsonBodyInAttribute([AllowNull] string propertyName = null) : Attribute
 {
-    public JsonBodyInAttribute([AllowNull] string propertyName = null)
-        =>
-        PropertyName = string.IsNullOrEmpty(propertyName) ? null : propertyName;
-
-    public string? PropertyName { get; }
+    public string? PropertyName { get; } = string.IsNullOrEmpty(propertyName) ? null : propertyName;
 }

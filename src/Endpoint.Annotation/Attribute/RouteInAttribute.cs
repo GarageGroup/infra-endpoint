@@ -4,13 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 namespace GarageGroup.Infra;
 
 [AttributeUsage(AttributeTargets.Parameter)]
-public sealed class RouteInAttribute : Attribute
+public sealed class RouteInAttribute([AllowNull] string name = null) : Attribute
 {
-    public RouteInAttribute([AllowNull] string name = null)
-        =>
-        Name = string.IsNullOrEmpty(name) ? null : name;
-
-    public string? Name { get; }
+    public string? Name { get; } = string.IsNullOrEmpty(name) ? null : name;
 
     public string? Description { get; set; }
 }
