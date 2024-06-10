@@ -6,6 +6,8 @@ namespace GarageGroup.Infra;
 
 internal static partial class SourceGeneratorExtensions
 {
+    private const string EndpointAttributeName = "GarageGroup.Infra.EndpointAttribute";
+
     private static IEnumerable<T> NotNull<T>(this IEnumerable<T?> source)
     {
         foreach (var item in source)

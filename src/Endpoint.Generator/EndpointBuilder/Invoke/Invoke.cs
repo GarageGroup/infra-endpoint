@@ -185,24 +185,32 @@ partial class EndpointBuilder
                 continue;
             }
 
-            var requestBodyData = requestBody.BodyType.GetDisplayedData();
-
-            sourceBuilder.AddUsings(requestBodyData.AllNamespaces);
+            var bodyResult = $"{parameter.Name}Result";
             resultParameters.Add(parameter.Name);
 
-            var bodyResult = $"{parameter.Name}Result";
+            var requestBodyData = requestBody.BodyType.GetDisplayedData();
+            sourceBuilder = sourceBuilder.AddUsings(requestBodyData.AllNamespaces);
+
             var requestType = requestBodyData.DisplayedTypeName;
 
-            if (requestBody.ContentType.Kind is ContentKind.Xml)
+            if (requestBody.BodyType.IsEndpointBodyParser())
             {
                 sourceBuilder = sourceBuilder.AppendCodeLine(
-                    $"var {bodyResult} = await request.DeserializeXmlBodyAsync<{requestType}>(token).ConfigureAwait(false);");
+                    $"var {bodyResult} = await {requestType}.ParseAsync(request, token).ConfigureAwait(false);");
             }
             else
             {
-                sourceBuilder = sourceBuilder.AppendCodeLine(
-                    $"var {bodyResult} = await request.DeserializeBodyAsync<{requestType}>(jsonSerializerOptions, logger, token)" +
-                    ".ConfigureAwait(false);");
+                if (requestBody.ContentType.Kind is ContentKind.Xml)
+                {
+                    sourceBuilder = sourceBuilder.AppendCodeLine(
+                        $"var {bodyResult} = await request.DeserializeXmlBodyAsync<{requestType}>(token).ConfigureAwait(false);");
+                }
+                else
+                {
+                    sourceBuilder = sourceBuilder.AppendCodeLine(
+                        $"var {bodyResult} = await request.DeserializeBodyAsync<{requestType}>(jsonSerializerOptions, logger, token)" +
+                        ".ConfigureAwait(false);");
+                }
             }
 
             sourceBuilder = sourceBuilder

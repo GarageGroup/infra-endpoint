@@ -18,6 +18,11 @@ internal sealed class EndpointSourceGenerator : ISourceGenerator
             var endpointIvokeSource = endpointType.BuildEndpointInvokeSource();
             context.AddSource(endpointType.TypeEndpointName + ".Invoke.g.cs", endpointIvokeSource);
         }
+
+        foreach (var mediaType in context.GetMediaTypes())
+        {
+            context.AddSource(mediaType.TypeName + ".g.cs", mediaType.BuildSource());
+        }
     }
 
     public void Initialize(GeneratorInitializationContext context)

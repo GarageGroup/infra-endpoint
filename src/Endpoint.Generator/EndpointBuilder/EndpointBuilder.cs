@@ -16,6 +16,8 @@ internal static partial class EndpointBuilder
 
     private const string NoContentStatusCodeValue = "204";
 
+    private const string MediaTypePropertyName = "MediaType";
+
     private static SourceBuilder AppendObsoleteAttributeIfNecessary(this SourceBuilder builder, EndpointTypeDescription type)
     {
         if (type.ObsoleteData is null)

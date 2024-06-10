@@ -156,7 +156,16 @@ partial class EndpointBuilder
         var requestBodyType = type.GetRequestBodyType();
         if (requestBodyType is not null)
         {
-            return sourceBuilder.AppendCodeLine("RequestBody = new()").BeginCodeBlock().AppendContent(requestBodyType).EndCodeBlock(',');
+            if (requestBodyType.BodyType.IsEndpointBodyMetadataProvider() is false)
+            {
+                return sourceBuilder.AppendCodeLine("RequestBody = new()").BeginCodeBlock().AppendContent(requestBodyType).EndCodeBlock(',');
+            }
+
+            var requestBodyData = requestBodyType.BodyType.GetDisplayedData();
+            sourceBuilder = sourceBuilder.AddUsings(requestBodyData.AllNamespaces);
+
+            var requestType = requestBodyData.DisplayedTypeName;
+            return sourceBuilder.AppendCodeLine($"RequestBody = {requestType}.GetEndpointBodyMetadata(),");
         }
 
         var requestBodyProperties = type.GetRequestBodyProperties();
@@ -182,7 +191,7 @@ partial class EndpointBuilder
         var successData = type.GetSuccessData();
         if (successData.Count is 0)
         {
-            successData = new[] { new SuccessData(type.GetDefaultStatusCode(), null) };
+            successData = [new SuccessData(type.GetDefaultStatusCode(), null)];
         }
 
         var successDataDictionary = new Dictionary<string, SuccessData>();
