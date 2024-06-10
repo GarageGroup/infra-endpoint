@@ -34,6 +34,8 @@ internal static partial class EndpointAttributeHelper
 
     private const string SwaggerDescriptionAttribute = "SwaggerDescriptionAttribute";
 
+    private const string MediaTypeMetadataAttribute = "MediaTypeMetadataAttribute";
+
     private static bool InnerIsEndpointAttribute(AttributeData attributeData, string attributeTypeName)
         =>
         attributeData.AttributeClass?.IsType(AttributeNamespace, attributeTypeName) is true;

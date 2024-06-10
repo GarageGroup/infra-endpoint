@@ -132,6 +132,11 @@ partial class EndpointBuilder
             return InnerBuildSchemaFunction("CreateTimeSpanSchema");
         }
 
+        if (type.IsSystemType("TimeOnly"))
+        {
+            return InnerBuildSchemaFunction("CreateTimeOnlySchema");
+        }
+
         if (type.IsSystemType(nameof(Boolean)))
         {
             return InnerBuildSchemaFunction("CreateBooleanSchema");

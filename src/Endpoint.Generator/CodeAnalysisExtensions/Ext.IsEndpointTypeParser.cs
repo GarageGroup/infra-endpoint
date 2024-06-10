@@ -12,13 +12,13 @@ partial class CodeAnalysisExtensions
             return false;
         }
 
-        return typeSymbol.Interfaces.Where(IsEndpointTypeParserType).Where(IsParedTypeEqualToSourceType).Any();
+        return typeSymbol.Interfaces.Where(IsEndpointTypeParserType).Where(IsParsedTypeEqualToSourceType).Any();
 
         static bool IsEndpointTypeParserType(INamedTypeSymbol interfaceType)
             =>
             interfaceType.IsType("GarageGroup.Infra", "IEndpointTypeParser");
 
-        bool IsParedTypeEqualToSourceType(INamedTypeSymbol interfaceType)
+        bool IsParsedTypeEqualToSourceType(INamedTypeSymbol interfaceType)
             =>
             interfaceType.TypeArguments.Length is 1 &&
             interfaceType.TypeArguments[0].Equals(typeSymbol, SymbolEqualityComparer.Default);

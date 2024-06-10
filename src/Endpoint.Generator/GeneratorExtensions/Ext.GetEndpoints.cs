@@ -9,8 +9,6 @@ using static EndpointAttributeHelper;
 
 partial class SourceGeneratorExtensions
 {
-    private const string EndpointAttributeName = "GarageGroup.Infra.EndpointAttribute";
-
     internal static IReadOnlyCollection<EndpointTypeDescription> GetEndpointTypes(this GeneratorExecutionContext context)
     {
         var endpointAttributeType = context.Compilation.GetTypeByMetadataNameOrThrow(EndpointAttributeName);
