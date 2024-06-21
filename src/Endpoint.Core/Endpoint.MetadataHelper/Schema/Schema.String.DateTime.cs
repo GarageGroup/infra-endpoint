@@ -1,3 +1,4 @@
+using System;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
@@ -12,7 +13,7 @@ partial class EndpointMetadataHelper
             Type = "string",
             Format = "date-time",
             Nullable = nullable,
-            Example = example,
+            Example = example ?? new OpenApiString(DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")),
             Description = description
         };
 }
