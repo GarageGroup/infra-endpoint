@@ -1,14 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <InvariantGlobalization>true</InvariantGlobalization>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);IDE0130;CA1859</NoWarn>
     <RootNamespace>GarageGroup.Infra</RootNamespace>
     <AssemblyName>GarageGroup.Infra.Endpoint.AspNetCore</AssemblyName>
-    <Version>0.21.1</Version>
+    <Version>0.21.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GarageGroup.Infra.Swagger.Builder.Abstractions" Version="2.2.5" />
-    <PackageReference Include="GarageGroup.Infra.Endpoint.Core" Version="0.16.1" />
+    <PackageReference Include="GarageGroup.Infra.Swagger.Builder.Abstractions" Version="2.2.6" />
+    <PackageReference Include="GarageGroup.Infra.Endpoint.Core" Version="0.16.2" />
     <PackageReference Include="PrimeFuncPack.Dependency.Core" Version="2.1.0" />
   </ItemGroup>
 
