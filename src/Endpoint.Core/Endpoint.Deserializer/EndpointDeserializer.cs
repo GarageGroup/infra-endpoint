@@ -24,6 +24,21 @@ public static partial class EndpointDeserializer
         this JsonDocument? jsonDocument, [AllowNull] string propertyName, Func<JsonElement, string, Result<T, Failure<Unit>>> parser)
         where T : struct
     {
+        return jsonDocument.GetNullableValue(propertyName, InnerParse);
+
+        Result<T?, Failure<Unit>> InnerParse(JsonElement jsonValue, string name)
+            =>
+            parser.Invoke(jsonValue, name).MapSuccess(AsNullable);
+
+        static T? AsNullable(T value)
+            =>
+            value;
+    }
+
+    private static Result<T?, Failure<Unit>> GetNullableValue<T>(
+        this JsonDocument? jsonDocument, [AllowNull] string propertyName, Func<JsonElement, string, Result<T?, Failure<Unit>>> parser)
+        where T : struct
+    {
         var name = propertyName ?? string.Empty;
 
         var jsonProperty = jsonDocument.GetPropertyOrNull(name);
@@ -32,9 +47,7 @@ public static partial class EndpointDeserializer
             return null;
         }
 
-        return parser.Invoke(jsonProperty.Value, name).MapSuccess(ToNullable);
-
-        static T? ToNullable(T value) => value;
+        return parser.Invoke(jsonProperty.Value, name);
     }
 
     private static JsonElement? GetPropertyOrNull(this JsonDocument? jsonDocument, string propertyName)
