@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/.github/">
+    <File Path=".github/workflows/dotnet.yml" />
+  </Folder>
+  <Folder Name="/contract/">
+    <Project Path="src/contract/Endpoint.SchemaProvider/Endpoint.SchemaProvider.csproj" />
+    <Project Path="src/contract/Endpoint.TypeParser/Endpoint.TypeParser.csproj" />
+  </Folder>
+  <Folder Name="/core/">
+    <Project Path="src/core/Endpoint.Annotation/Endpoint.Annotation.csproj" />
+    <Project Path="src/core/Endpoint.Core/Endpoint.Core.csproj" />
+    <Project Path="src/core/Endpoint.Generator/Endpoint.Generator.csproj" />
+    <Project Path="src/core/Endpoint.Generator.Test/Endpoint.Generator.Test.csproj" />
+  </Folder>
+  <Folder Name="/aspnet/">
+    <Project Path="src/aspnet/Endpoint.AspNetCore/Endpoint.AspNetCore.csproj" />
+    <Project Path="src/aspnet/Endpoint.AspNetCore.Generator/Endpoint.AspNetCore.Generator.csproj" />
+    <Project Path="src/aspnet/Endpoint.AspNetCore.Generator.Test/Endpoint.AspNetCore.Generator.Test.csproj" />
+  </Folder>
+</Solution>
