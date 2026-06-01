@@ -51,4 +51,19 @@ partial class EndpointSourceGeneratorTest
             =>
             source.HintName.Equals(EndpointSourceGeneratorData.TagSetGetFactoryHintName, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public static void Execute_CustomSerializerOptionsFunc_GeneratesFactorySource()
+    {
+        var generatedSources = RunGeneratorAndGetSources(EndpointSourceGeneratorData.CustomSerializerOptionsSourceCode);
+        var factorySource = generatedSources.Single(IsFactorySource).SourceText.ToString();
+
+        Assert.Equal(
+            NormalizeNewLines(EndpointSourceGeneratorData.CustomSerializerOptionsFactorySourceCode),
+            NormalizeNewLines(factorySource));
+
+        static bool IsFactorySource(GeneratedSourceResult source)
+            =>
+            source.HintName.Equals(EndpointSourceGeneratorData.CustomSerializerOptionsFactoryHintName, StringComparison.Ordinal);
+    }
 }

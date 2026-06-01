@@ -27,32 +27,27 @@ partial class EndpointBuilder
         .BeginArguments()
         .AppendCodeLines(
             $"endpointFunc: {GetNullValidationValue("endpointFunc", type.IsTypeFuncStruct)},",
-            $"jsonSerializerOptions: {type.GetSerializerOptionsValue()},",
             $"logger: serviceProvider?.GetEndpointLogger<{type.TypeEndpointName}>());")
         .EndArguments()
         .EndLambda()
         .AppendEmptyLine()
         .AppendCodeLines(
-            "private static readonly JsonSerializerOptions DefaultSerializerOptions = EndpointDeserializer.CreateDeafultOptions();")
+            $"private static readonly JsonSerializerOptions SerializerOptions = {type.GetSerializerOptionsValue()};")
         .AppendEmptyLine()
         .AppendObsoleteAttributeIfNecessary(type)
         .AppendCodeLines(
             $"private readonly {type.TypeFuncName} endpointFunc;")
         .AppendEmptyLine()
         .AppendCodeLines(
-            "private readonly JsonSerializerOptions jsonSerializerOptions;")
-        .AppendEmptyLine()
-        .AppendCodeLines(
             "private readonly ILogger? logger;")
         .AppendEmptyLine()
         .AppendObsoleteAttributeIfNecessary(type)
         .AppendCodeLines(
-            $"private {type.TypeEndpointName}({type.TypeFuncName} endpointFunc, JsonSerializerOptions jsonSerializerOptions, ILogger? logger)")
+            $"{type.GetConstructorVisibility()} {type.TypeEndpointName}({type.TypeFuncName} endpointFunc, ILogger? logger)")
         .BeginCodeBlock()
         .AppendCodeLines(
             "this.endpointFunc = endpointFunc;",
-            "this.logger = logger;",
-            "this.jsonSerializerOptions = jsonSerializerOptions;")
+            "this.logger = logger;")
         .EndCodeBlock()
         .EndCodeBlock()
         .Build();
@@ -61,10 +56,16 @@ partial class EndpointBuilder
         =>
         type.IsTypePublic ? "public" : "internal";
 
+    private static string GetConstructorVisibility(this EndpointTypeDescription type)
+        =>
+        type.IsIncludedInEndpointSet ? "internal" : "private";
+
     private static SourceBuilder AppendEndpointMetadataAttribute(this SourceBuilder builder, EndpointTypeDescription type)
     {
         var method = type.MethodName?.ToUpperInvariant();
-        return builder.AppendCodeLines($"[EndpointMetadata({method.AsStringSourceCodeOr()}, {type.Route.AsStringSourceCodeOr()})]");
+        return builder.AppendCodeLines(
+            $"[EndpointMetadata({method.AsStringSourceCodeOr()}, {type.Route.AsStringSourceCodeOr()})]",
+            $"[EndpointOperationMetadata({type.OperationId.AsStringSourceCodeOrStringEmpty()}, {method.AsStringSourceCodeOr()}, {type.Route.AsStringSourceCodeOr()})]");
     }
 
     private static string GetNullValidationValue(string argumentName, bool isStructType)
@@ -79,9 +80,9 @@ partial class EndpointBuilder
     {
         if (string.IsNullOrEmpty(type.SerializerOptionsPropertyFuncName))
         {
-            return "DefaultSerializerOptions";
+            return "EndpointDeserializer.CreateDeafultOptions()";
         }
 
-        return $"{type.TypeFuncName}.{type.SerializerOptionsPropertyFuncName} ?? DefaultSerializerOptions";
+        return $"{type.TypeFuncName}.{type.SerializerOptionsPropertyFuncName} ?? EndpointDeserializer.CreateDeafultOptions()";
     }
 }

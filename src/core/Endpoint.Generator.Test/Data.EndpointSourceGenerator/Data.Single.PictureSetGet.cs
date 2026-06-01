@@ -14,7 +14,7 @@ partial class EndpointSourceGeneratorData
         {
             using static PictureSetGetMetadata;
 
-            [Endpoint(EndpointMethod.Get, Func.Route, Summary = Func.Summary, Description = Func.Description)]
+            [Endpoint(Func.OperationId, EndpointMethod.Get, Func.Route, Summary = Func.Summary, Description = Func.Description)]
             [EndpointTag(Func.TagName, Description = Func.TagDescription)]
             public interface IPictureSetGetFunc
             {
@@ -107,6 +107,8 @@ partial class EndpointSourceGeneratorData
             {
                 internal static class Func
                 {
+                    public const string OperationId = "PictureSetGet";
+
                     public const string Route = "/pictures/{entity}/{id}";
 
                     public const string Summary = "Get pictures";
@@ -211,28 +213,25 @@ partial class EndpointSourceGeneratorData
         namespace Demo;
 
         [EndpointMetadata("GET", "/pictures/{entity}/{id}")]
+        [EndpointOperationMetadata("PictureSetGet", "GET", "/pictures/{entity}/{id}")]
         public sealed partial class PictureSetGetEndpoint : IEndpoint
         {
             public static PictureSetGetEndpoint Resolve(IServiceProvider? serviceProvider, IPictureSetGetFunc endpointFunc)
                 =>
                 new(
                     endpointFunc: endpointFunc ?? throw new ArgumentNullException(nameof(endpointFunc)),
-                    jsonSerializerOptions: DefaultSerializerOptions,
                     logger: serviceProvider?.GetEndpointLogger<PictureSetGetEndpoint>());
 
-            private static readonly JsonSerializerOptions DefaultSerializerOptions = EndpointDeserializer.CreateDeafultOptions();
+            private static readonly JsonSerializerOptions SerializerOptions = EndpointDeserializer.CreateDeafultOptions();
 
             private readonly IPictureSetGetFunc endpointFunc;
 
-            private readonly JsonSerializerOptions jsonSerializerOptions;
-
             private readonly ILogger? logger;
 
-            private PictureSetGetEndpoint(IPictureSetGetFunc endpointFunc, JsonSerializerOptions jsonSerializerOptions, ILogger? logger)
+            private PictureSetGetEndpoint(IPictureSetGetFunc endpointFunc, ILogger? logger)
             {
                 this.endpointFunc = endpointFunc;
                 this.logger = logger;
-                this.jsonSerializerOptions = jsonSerializerOptions;
             }
         }
         """;
@@ -263,7 +262,7 @@ partial class EndpointSourceGeneratorData
                     var inputFailure = inputResult.FailureOrThrow();
 
                     logger?.LogError(inputFailure.SourceException, "Request is incorrect: {failureMessage}", inputFailure.FailureMessage);
-                    return inputResult.FailureOrThrow().ToBadRequestResponse(jsonSerializerOptions);
+                    return inputResult.FailureOrThrow().ToBadRequestResponse(SerializerOptions);
                 }
 
                 var input = inputResult.SuccessOrThrow();
@@ -313,7 +312,7 @@ partial class EndpointSourceGeneratorData
                     {
                         new("Content-Type", "application/json")
                     },
-                    body: success.Pictures.ToJsonStream(jsonSerializerOptions));
+                    body: success.Pictures.ToJsonStream(SerializerOptions));
             }
         }
         """;
@@ -431,7 +430,10 @@ partial class EndpointSourceGeneratorData
                     },
                     schemas: new Dictionary<string, IOpenApiSchema>()
                     {
-                    });
+                    })
+                {
+                    OperationId = "PictureSetGet"
+                };
         }
         """;
 }

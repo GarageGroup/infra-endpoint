@@ -38,4 +38,6 @@ public sealed record class EndpointRequest
     public ClaimsPrincipal User { get; }
 
     public Stream? Body { get; }
+
+    public string? OperationId { get; init; }
 }

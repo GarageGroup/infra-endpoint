@@ -8,16 +8,9 @@ namespace GarageGroup.Infra.Endpoint;
 
 partial class EndpointSwaggerConfigurator
 {
-    internal static void Configure<TEndpoint>(OpenApiDocument document)
-        where TEndpoint : class, IEndpointMetadataProvider
+    internal static void Configure(this EndpointMetadata metadata, OpenApiDocument document)
     {
-        if (document is null)
-        {
-            return;
-        }
-
-        var metadata = TEndpoint.GetEndpointMetadata();
-        if (metadata is null)
+        if (document is null || metadata is null)
         {
             return;
         }

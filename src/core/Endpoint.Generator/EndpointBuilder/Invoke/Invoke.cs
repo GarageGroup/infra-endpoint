@@ -76,7 +76,7 @@ partial class EndpointBuilder
             .AppendCodeLines(
                 "logger?.LogError(inputFailure.SourceException, \"Request is incorrect: {failureMessage}\", inputFailure.FailureMessage);")
             .AppendCodeLines(
-                "return inputResult.FailureOrThrow().ToBadRequestResponse(jsonSerializerOptions);")
+                "return inputResult.FailureOrThrow().ToBadRequestResponse(SerializerOptions);")
             .EndCodeBlock()
             .AppendEmptyLine()
             .AppendCodeLines(
@@ -209,7 +209,7 @@ partial class EndpointBuilder
                 else
                 {
                     sourceBuilder = sourceBuilder.AppendCodeLines(
-                        $"var {bodyResult} = await request.DeserializeBodyAsync<{requestType}>(jsonSerializerOptions, logger, token)" +
+                        $"var {bodyResult} = await request.DeserializeBodyAsync<{requestType}>(SerializerOptions, logger, token)" +
                         ".ConfigureAwait(false);");
                 }
             }
@@ -308,7 +308,7 @@ partial class EndpointBuilder
             }
 
             var nullableSign = isNullable ? "?" : string.Empty;
-            return $"DeserializeOrFailure<{typeData.DisplayedTypeName}{nullableSign}>({jsonPropertyValue}, jsonSerializerOptions, logger)";
+            return $"DeserializeOrFailure<{typeData.DisplayedTypeName}{nullableSign}>({jsonPropertyValue}, SerializerOptions, logger)";
         }
     }
 
@@ -352,6 +352,10 @@ partial class EndpointBuilder
         {
             headers.Add(new("\"Content-Type\"", "\"application/json; charset=utf-8\""));
         }
+        else if (type.HasImplicitResponseBody())
+        {
+            headers.Add(new("\"Content-Type\"", "\"application/json\""));
+        }
 
         if (headers.Count is not > 0)
         {
@@ -380,7 +384,7 @@ partial class EndpointBuilder
             }
             else if (responseBodyType.ContentType.Kind is ContentKind.Json)
             {
-                sourceBuilder = sourceBuilder.AppendCodeLines($"body: success.{responseBodyType.PropertyName}.ToJsonStream(jsonSerializerOptions));");
+                sourceBuilder = sourceBuilder.AppendCodeLines($"body: success.{responseBodyType.PropertyName}.ToJsonStream(SerializerOptions));");
             }
             else if (responseBodyType.ContentType.Kind is ContentKind.Xml)
             {
@@ -396,7 +400,9 @@ partial class EndpointBuilder
 
         if (responseBodyProperties.Count is not > 0)
         {
-            return sourceBuilder.AppendCodeLines("body: default);").EndArguments();
+            return type.HasImplicitResponseBody()
+                ? sourceBuilder.AppendCodeLines("body: success.ToJsonStream(SerializerOptions));").EndArguments()
+                : sourceBuilder.AppendCodeLines("body: default);").EndArguments();
         }
 
         const string localFunctionName = "InnerGetBody";
@@ -513,7 +519,7 @@ partial class EndpointBuilder
             sourceBuilder = sourceBuilder.AppendCodeLines(
                 $"writer.WritePropertyName({jsonNameValue});")
             .AppendCodeLines(
-                $"JsonSerializer.Serialize(writer, {propertyValue}, jsonSerializerOptions);");
+                $"JsonSerializer.Serialize(writer, {propertyValue}, SerializerOptions);");
         }
 
         if (hasCheck)
@@ -606,7 +612,7 @@ partial class EndpointBuilder
             }
 
             sourceBuilder.EndArguments()
-            .AppendCodeLines(".ToFailureResponse(jsonSerializerOptions);")
+            .AppendCodeLines(".ToFailureResponse(SerializerOptions);")
             .EndCodeBlock()
             .AppendEmptyLine();
         }

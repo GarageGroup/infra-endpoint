@@ -9,12 +9,12 @@ internal sealed record class RootTypeMetadata
         string @namespace,
         string typeName,
         DisplayedTypeData providerType,
-        IReadOnlyList<string> resolverMethodNames)
+        IReadOnlyList<ResolverMethodMetadata> resolverMethods)
     {
         Namespace = @namespace ?? string.Empty;
         TypeName = typeName ?? string.Empty;
         ProviderType = providerType;
-        ResolverMethodNames = resolverMethodNames ?? [];
+        ResolverMethods = resolverMethods ?? [];
     }
 
     public string Namespace { get; }
@@ -23,5 +23,5 @@ internal sealed record class RootTypeMetadata
 
     public DisplayedTypeData ProviderType { get; }
 
-    public IReadOnlyList<string> ResolverMethodNames { get; }
+    public IReadOnlyList<ResolverMethodMetadata> ResolverMethods { get; }
 }

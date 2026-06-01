@@ -11,21 +11,58 @@ using static EndpointAttributeHelper;
 
 partial class SourceGeneratorExtensions
 {
-    internal static IReadOnlyCollection<EndpointTypeDescription> GetEndpointTypes(this Compilation compilation, CancellationToken cancellationToken)
+    internal static IReadOnlyCollection<EndpointTypeDescription> GetEndpointTypes(
+        this Compilation compilation, CancellationToken cancellationToken)
     {
         var endpointAttributeType = compilation.GetTypeByMetadataNameOrThrow(EndpointAttributeName);
+        var endpointSetAttributeType = compilation.GetTypeByMetadataNameOrThrow(EndpointSetAttributeName);
 
         var visitor = new ExportedTypesCollector(cancellationToken);
         visitor.VisitAssembly(compilation.Assembly);
 
-        return visitor.GetNonStaticTypes().Select(InnerGetEndpointType).NotNull().ToArray();
+        var exportedTypes = visitor.GetNonStaticTypes().ToArray();
+        var endpointTypesInSet = exportedTypes.GetEndpointTypesInSet(endpointAttributeType, endpointSetAttributeType);
+
+        return exportedTypes.Select(InnerGetEndpointType).NotNull().ToArray();
 
         EndpointTypeDescription? InnerGetEndpointType(INamedTypeSymbol typeSymbol)
             =>
-            GetEndpointType(typeSymbol, endpointAttributeType);
+            GetEndpointType(typeSymbol, endpointAttributeType, endpointTypesInSet.Contains(typeSymbol, SymbolEqualityComparer.Default));
     }
 
-    private static EndpointTypeDescription? GetEndpointType(INamedTypeSymbol typeSymbol, INamedTypeSymbol endpointAttributeType)
+    private static IReadOnlyCollection<INamedTypeSymbol> GetEndpointTypesInSet(
+        this IEnumerable<INamedTypeSymbol> typeSymbols, INamedTypeSymbol endpointAttributeType, INamedTypeSymbol endpointSetAttributeType)
+    {
+        var endpointTypes = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+        foreach (var typeSymbol in typeSymbols)
+        {
+            if (typeSymbol.GetAttributes().Any(IsEndpointSetAttribute) is false)
+            {
+                continue;
+            }
+
+            foreach (var interfaceType in typeSymbol.AllInterfaces)
+            {
+                if (interfaceType.GetAttributes().Any(IsEndpointAttribute))
+                {
+                    _ = endpointTypes.Add(interfaceType);
+                }
+            }
+        }
+
+        return endpointTypes;
+
+        bool IsEndpointAttribute(AttributeData attributeData)
+            =>
+            attributeData.AttributeClass?.Equals(endpointAttributeType, SymbolEqualityComparer.Default) is true;
+
+        bool IsEndpointSetAttribute(AttributeData attributeData)
+            =>
+            attributeData.AttributeClass?.Equals(endpointSetAttributeType, SymbolEqualityComparer.Default) is true;
+    }
+
+    private static EndpointTypeDescription? GetEndpointType(
+        INamedTypeSymbol typeSymbol, INamedTypeSymbol endpointAttributeType, bool isIncludedInEndpointSet)
     {
         var endpointAttributeData = typeSymbol.GetAttributes().FirstOrDefault(IsEndpointAttribute);
         if (endpointAttributeData is null)
@@ -62,21 +99,54 @@ partial class SourceGeneratorExtensions
             IsTypeFuncStruct = typeSymbol.IsReferenceType is false,
             MethodFuncName = endpointMethod.Name,
             SerializerOptionsPropertyFuncName = typeSymbol.GetSerializerOptionsPropertyFuncName(),
-            MethodName = GetMethodName(endpointAttributeData.ConstructorArguments[0].Value),
-            Route = endpointAttributeData.ConstructorArguments[1].Value?.ToString(),
+            MethodName = GetMethodName(endpointAttributeData.GetEndpointMethodValue()),
+            Route = endpointAttributeData.GetEndpointRouteValue(),
+            OperationId = endpointAttributeData.GetEndpointOperationId(typeSymbol),
             Summary = endpointAttributeData.GetAttributePropertyValue("Summary")?.ToString(),
             Description = endpointAttributeData.GetAttributePropertyValue("Description")?.ToString(),
             Tags = tags,
             RequestType = endpointMethod.Parameters[0].Type,
             ResponseType = methodRetrunType.IsResultType() ? methodRetrunType?.TypeArguments[0] : methodRetrunType,
             FailureCodeType = failureType?.TypeArguments[0],
-            ObsoleteData = typeSymbol.GetObsoleteData()
+            ObsoleteData = typeSymbol.GetObsoleteData(),
+            IsIncludedInEndpointSet = isIncludedInEndpointSet
         };
 
         bool IsEndpointAttribute(AttributeData attributeData)
             =>
             attributeData.AttributeClass?.Equals(endpointAttributeType, SymbolEqualityComparer.Default) is true;
     }
+
+    private static string GetEndpointOperationId(this AttributeData attributeData, INamedTypeSymbol typeSymbol)
+    {
+        if (attributeData.ConstructorArguments.Length < 3)
+        {
+            throw new InvalidOperationException(
+                $"Endpoint operationId for type {typeSymbol.Name} must be specified and cannot be null or whitespace. " +
+                "Use EndpointAttribute(string operationId, EndpointMethod method, string route).");
+        }
+
+        var operationId = attributeData.ConstructorArguments[0].Value?.ToString();
+        if (string.IsNullOrWhiteSpace(operationId))
+        {
+            throw new InvalidOperationException(
+                $"Endpoint operationId for type {typeSymbol.Name} must be specified and cannot be null or whitespace.");
+        }
+
+        return operationId!;
+    }
+
+    private static object? GetEndpointMethodValue(this AttributeData attributeData)
+        =>
+        attributeData.ConstructorArguments.Length >= 3
+            ? attributeData.ConstructorArguments[1].Value
+            : attributeData.ConstructorArguments[0].Value;
+
+    private static string? GetEndpointRouteValue(this AttributeData attributeData)
+        =>
+        attributeData.ConstructorArguments.Length >= 3
+            ? attributeData.ConstructorArguments[2].Value?.ToString()
+            : attributeData.ConstructorArguments[1].Value?.ToString();
 
     private static IEnumerable<EndpointTag> GetEndpointTags(this INamedTypeSymbol typeSymbol)
     {

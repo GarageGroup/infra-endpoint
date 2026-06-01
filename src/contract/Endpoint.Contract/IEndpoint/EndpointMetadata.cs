@@ -37,4 +37,6 @@ public sealed record class EndpointMetadata
     public OpenApiOperation Operation { get; }
 
     public ISchemaCollection Schemas { get; }
+
+    public string? OperationId { get; init; }
 }

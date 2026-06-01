@@ -14,7 +14,7 @@ partial class EndpointSourceGeneratorData
         {
             using static NotificationSubscribeMetadata;
 
-            [Endpoint(EndpointMethod.Post, Func.RouteSubscribe, Summary = Func.SummarySubscribe, Description = Func.DescriptionSubscribe)]
+            [Endpoint(Func.OperationIdSubscribe, EndpointMethod.Post, Func.RouteSubscribe, Summary = Func.SummarySubscribe, Description = Func.DescriptionSubscribe)]
             [EndpointTag(Func.Tag)]
             [EndpointTag("Audit", Description = "Audit events")]
             public interface INotificationSubscribeFunc
@@ -71,6 +71,8 @@ partial class EndpointSourceGeneratorData
             {
                 internal static class Func
                 {
+                    public const string OperationIdSubscribe = "NotificationSubscribe";
+
                     public const string Tag = "Notification";
 
                     public const string RouteSubscribe = "/subscribeToNotification";
@@ -161,28 +163,25 @@ partial class EndpointSourceGeneratorData
         namespace Demo;
 
         [EndpointMetadata("POST", "/subscribeToNotification")]
+        [EndpointOperationMetadata("NotificationSubscribe", "POST", "/subscribeToNotification")]
         public sealed partial class NotificationSubscribeEndpoint : IEndpoint
         {
             public static NotificationSubscribeEndpoint Resolve(IServiceProvider? serviceProvider, INotificationSubscribeFunc endpointFunc)
                 =>
                 new(
                     endpointFunc: endpointFunc ?? throw new ArgumentNullException(nameof(endpointFunc)),
-                    jsonSerializerOptions: DefaultSerializerOptions,
                     logger: serviceProvider?.GetEndpointLogger<NotificationSubscribeEndpoint>());
 
-            private static readonly JsonSerializerOptions DefaultSerializerOptions = EndpointDeserializer.CreateDeafultOptions();
+            private static readonly JsonSerializerOptions SerializerOptions = EndpointDeserializer.CreateDeafultOptions();
 
             private readonly INotificationSubscribeFunc endpointFunc;
 
-            private readonly JsonSerializerOptions jsonSerializerOptions;
-
             private readonly ILogger? logger;
 
-            private NotificationSubscribeEndpoint(INotificationSubscribeFunc endpointFunc, JsonSerializerOptions jsonSerializerOptions, ILogger? logger)
+            private NotificationSubscribeEndpoint(INotificationSubscribeFunc endpointFunc, ILogger? logger)
             {
                 this.endpointFunc = endpointFunc;
                 this.logger = logger;
-                this.jsonSerializerOptions = jsonSerializerOptions;
             }
         }
         """;
@@ -213,7 +212,7 @@ partial class EndpointSourceGeneratorData
                     var inputFailure = inputResult.FailureOrThrow();
 
                     logger?.LogError(inputFailure.SourceException, "Request is incorrect: {failureMessage}", inputFailure.FailureMessage);
-                    return inputResult.FailureOrThrow().ToBadRequestResponse(jsonSerializerOptions);
+                    return inputResult.FailureOrThrow().ToBadRequestResponse(SerializerOptions);
                 }
 
                 var input = inputResult.SuccessOrThrow();
@@ -260,7 +259,7 @@ partial class EndpointSourceGeneratorData
                         title: "about:blank",
                         status: 400,
                         detail: failure.FailureMessage)
-                    .ToFailureResponse(jsonSerializerOptions);
+                    .ToFailureResponse(SerializerOptions);
                 }
 
                 if (failure.FailureCode is NotificationSubscribeFailureCode.NotificationTypeInvalid)
@@ -272,7 +271,7 @@ partial class EndpointSourceGeneratorData
                         title: "about:blank",
                         status: 400,
                         detail: "Notification type is unknown")
-                    .ToFailureResponse(jsonSerializerOptions);
+                    .ToFailureResponse(SerializerOptions);
                 }
 
                 if (failure.FailureCode is NotificationSubscribeFailureCode.NotificationTypeNotFound)
@@ -284,7 +283,7 @@ partial class EndpointSourceGeneratorData
                         title: "about:blank",
                         status: 404,
                         detail: "Notification type was not found")
-                    .ToFailureResponse(jsonSerializerOptions);
+                    .ToFailureResponse(SerializerOptions);
                 }
 
                 if (failure.FailureCode is NotificationSubscribeFailureCode.BotUserNotFound)
@@ -296,7 +295,7 @@ partial class EndpointSourceGeneratorData
                         title: "about:blank",
                         status: 404,
                         detail: "Bot user was not found")
-                    .ToFailureResponse(jsonSerializerOptions);
+                    .ToFailureResponse(SerializerOptions);
                 }
 
                 logger?.LogError(failure.SourceException, "An unexpected http error: {errorCode}. Message: {message}", failure.FailureCode, failure.FailureMessage);
@@ -390,7 +389,10 @@ partial class EndpointSourceGeneratorData
                     schemas: new Dictionary<string, IOpenApiSchema>()
                     {
                         ["ProblemDetails"] = CreateProblemSchema()
-                    });
+                    })
+                {
+                    OperationId = "NotificationSubscribe"
+                };
         }
         """;
 }

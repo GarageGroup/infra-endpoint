@@ -25,6 +25,8 @@ internal sealed record class EndpointTypeDescription
 
     public string? Route { get; set; }
 
+    public string? OperationId { get; set; }
+
     public string? Summary { get; set; }
 
     public string? Description { get; set; }
@@ -38,4 +40,6 @@ internal sealed record class EndpointTypeDescription
     public ITypeSymbol? FailureCodeType { get; set; }
 
     public ObsoleteData? ObsoleteData { get; set; }
+
+    public bool IsIncludedInEndpointSet { get; set; }
 }

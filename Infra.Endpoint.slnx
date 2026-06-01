@@ -2,12 +2,14 @@
   <Folder Name="/.github/">
     <File Path=".github/workflows/dotnet.yml" />
   </Folder>
+  <Folder Name="/extensions/">
+    <Project Path="src/extensions/Endpoint.SchemaProvider/Endpoint.SchemaProvider.csproj" />
+    <Project Path="src/extensions/Endpoint.TypeParser/Endpoint.TypeParser.csproj" />
+  </Folder>
   <Folder Name="/contract/">
-    <Project Path="src/contract/Endpoint.SchemaProvider/Endpoint.SchemaProvider.csproj" />
-    <Project Path="src/contract/Endpoint.TypeParser/Endpoint.TypeParser.csproj" />
+    <Project Path="src/contract/Endpoint.Contract/Endpoint.Contract.csproj" />
   </Folder>
   <Folder Name="/core/">
-    <Project Path="src/core/Endpoint.Annotation/Endpoint.Annotation.csproj" />
     <Project Path="src/core/Endpoint.Core/Endpoint.Core.csproj" />
     <Project Path="src/core/Endpoint.Generator/Endpoint.Generator.csproj" />
     <Project Path="src/core/Endpoint.Generator.Test/Endpoint.Generator.Test.csproj" />

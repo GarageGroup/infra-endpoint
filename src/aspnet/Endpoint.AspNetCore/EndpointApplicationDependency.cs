@@ -17,4 +17,15 @@ public static class EndpointApplicationDependency
 
         return applicationBuilder.InternalUseEndpoint(dependency.Resolve);
     }
+
+    public static TApplicationBuilder MapEndpointSet<TApplicationBuilder, TEndpoint>(
+        this Dependency<TEndpoint> dependency, TApplicationBuilder applicationBuilder)
+        where TApplicationBuilder : IApplicationBuilder
+        where TEndpoint : class, IEndpointSet
+    {
+        ArgumentNullException.ThrowIfNull(dependency);
+        ArgumentNullException.ThrowIfNull(applicationBuilder);
+
+        return applicationBuilder.InternalUseEndpointSet(dependency.Resolve);
+    }
 }

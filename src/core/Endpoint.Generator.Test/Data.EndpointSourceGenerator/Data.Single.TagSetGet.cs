@@ -15,7 +15,7 @@ partial class EndpointSourceGeneratorData
         {
             using static TagSetGetMetadata;
 
-            [Endpoint(EndpointMethod.Post, Func.Route, Summary = Func.Summary, Description = Func.Description)]
+            [Endpoint(Func.OperationId, EndpointMethod.Post, Func.Route, Summary = Func.Summary, Description = Func.Description)]
             public sealed class TagSetGetFunc
             {
                 public Task<Result<TagSetGetOut, Failure<Unit>>> InvokeAsync(
@@ -51,6 +51,8 @@ partial class EndpointSourceGeneratorData
             {
                 internal static class Func
                 {
+                    public const string OperationId = "TagSetGet";
+
                     public const string Tag = "Tag";
 
                     public const string Route = "/getTags";
@@ -134,28 +136,25 @@ partial class EndpointSourceGeneratorData
         namespace Demo;
 
         [EndpointMetadata("POST", "/getTags")]
+        [EndpointOperationMetadata("TagSetGet", "POST", "/getTags")]
         public sealed partial class TagSetGetEndpoint : IEndpoint
         {
             public static TagSetGetEndpoint Resolve(IServiceProvider? serviceProvider, TagSetGetFunc endpointFunc)
                 =>
                 new(
                     endpointFunc: endpointFunc ?? throw new ArgumentNullException(nameof(endpointFunc)),
-                    jsonSerializerOptions: DefaultSerializerOptions,
                     logger: serviceProvider?.GetEndpointLogger<TagSetGetEndpoint>());
 
-            private static readonly JsonSerializerOptions DefaultSerializerOptions = EndpointDeserializer.CreateDeafultOptions();
+            private static readonly JsonSerializerOptions SerializerOptions = EndpointDeserializer.CreateDeafultOptions();
 
             private readonly TagSetGetFunc endpointFunc;
 
-            private readonly JsonSerializerOptions jsonSerializerOptions;
-
             private readonly ILogger? logger;
 
-            private TagSetGetEndpoint(TagSetGetFunc endpointFunc, JsonSerializerOptions jsonSerializerOptions, ILogger? logger)
+            private TagSetGetEndpoint(TagSetGetFunc endpointFunc, ILogger? logger)
             {
                 this.endpointFunc = endpointFunc;
                 this.logger = logger;
-                this.jsonSerializerOptions = jsonSerializerOptions;
             }
         }
         """;
@@ -188,7 +187,7 @@ partial class EndpointSourceGeneratorData
                     var inputFailure = inputResult.FailureOrThrow();
 
                     logger?.LogError(inputFailure.SourceException, "Request is incorrect: {failureMessage}", inputFailure.FailureMessage);
-                    return inputResult.FailureOrThrow().ToBadRequestResponse(jsonSerializerOptions);
+                    return inputResult.FailureOrThrow().ToBadRequestResponse(SerializerOptions);
                 }
 
                 var input = inputResult.SuccessOrThrow();
@@ -242,7 +241,7 @@ partial class EndpointSourceGeneratorData
                     writer.WriteStartObject();
 
                     writer.WritePropertyName("tags");
-                    JsonSerializer.Serialize(writer, success.Tags, jsonSerializerOptions);
+                    JsonSerializer.Serialize(writer, success.Tags, SerializerOptions);
 
                     writer.WriteEndObject();
                     writer.Flush();
@@ -348,7 +347,10 @@ partial class EndpointSourceGeneratorData
                     },
                     schemas: new Dictionary<string, IOpenApiSchema>()
                     {
-                    });
+                    })
+                {
+                    OperationId = "TagSetGet"
+                };
         }
         """;
 }

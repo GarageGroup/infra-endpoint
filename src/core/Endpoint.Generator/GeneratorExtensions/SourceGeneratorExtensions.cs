@@ -9,6 +9,8 @@ internal static partial class SourceGeneratorExtensions
 {
     private const string EndpointAttributeName = "GarageGroup.Infra.EndpointAttribute";
 
+    private const string EndpointSetAttributeName = "GarageGroup.Infra.EndpointSetAttribute";
+
     private static IEnumerable<T> NotNull<T>(this IEnumerable<T?> source)
     {
         foreach (var item in source)
@@ -34,14 +36,28 @@ internal static partial class SourceGeneratorExtensions
             endpointTypeName = endpointTypeName.Substring(1);
         }
 
-        var httpFuncIndex = endpointTypeName.IndexOf("HttpFunc", StringComparison.InvariantCultureIgnoreCase);
-        if (httpFuncIndex > 0)
+        endpointTypeName = RemoveFromFirstIndex(endpointTypeName, "HttpFunc");
+        endpointTypeName = RemoveFromFirstIndex(endpointTypeName, "Func");
+        endpointTypeName = RemoveLastSuffix(endpointTypeName, "EndpointApi");
+        endpointTypeName = RemoveLastSuffix(endpointTypeName, "Api");
+
+        return endpointTypeName;
+
+        static string RemoveFromFirstIndex(string source, string value)
         {
-            return endpointTypeName.Substring(0, httpFuncIndex);
+            var index = source.IndexOf(value, StringComparison.InvariantCultureIgnoreCase);
+            return index > 0 ? source.Substring(0, index) : source;
         }
 
-        var funcIndex = endpointTypeName.IndexOf("Func", StringComparison.InvariantCultureIgnoreCase);
-        return funcIndex > 0 ? endpointTypeName.Substring(0, funcIndex) : endpointTypeName;
+        static string RemoveLastSuffix(string source, string value)
+        {
+            if (source.Length <= value.Length || source.EndsWith(value, StringComparison.InvariantCultureIgnoreCase) is false)
+            {
+                return source;
+            }
+
+            return source.Substring(0, source.Length - value.Length);
+        }
     }
 
     private static bool IsEndpointMethod(IMethodSymbol methodSymbol)
