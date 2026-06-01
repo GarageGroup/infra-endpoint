@@ -10,6 +10,9 @@ internal sealed class EndpointSourceGenerator : IIncrementalGenerator
         var endpointTypes = context.CompilationProvider.SelectMany(SourceGeneratorExtensions.GetEndpointTypes);
         context.RegisterSourceOutput(endpointTypes, AddEndpointSources);
 
+        var endpointSetTypes = context.CompilationProvider.SelectMany(SourceGeneratorExtensions.GetEndpointSetTypes);
+        context.RegisterSourceOutput(endpointSetTypes, AddEndpointSetSources);
+
         var mediaTypes = context.CompilationProvider.SelectMany(SourceGeneratorExtensions.GetMediaTypes);
         context.RegisterSourceOutput(mediaTypes, AddMediaTypeSource);
     }
@@ -29,4 +32,16 @@ internal sealed class EndpointSourceGenerator : IIncrementalGenerator
     private static void AddMediaTypeSource(SourceProductionContext context, MediaTypeDescription mediaType)
         =>
         context.AddSource(mediaType.TypeName + ".g.cs", mediaType.BuildSource());
+
+    private static void AddEndpointSetSources(SourceProductionContext context, EndpointSetTypeDescription endpointSetType)
+    {
+        var endpointSetFactorySource = endpointSetType.BuildEndpointSetFactorySource();
+        context.AddSource(endpointSetType.TypeEndpointSetName + ".g.cs", endpointSetFactorySource);
+
+        var endpointSetMetadataSource = endpointSetType.BuildEndpointSetMetadataSource();
+        context.AddSource(endpointSetType.TypeEndpointSetName + ".Metadata.g.cs", endpointSetMetadataSource);
+
+        var endpointSetInvokeSource = endpointSetType.BuildEndpointSetInvokeSource();
+        context.AddSource(endpointSetType.TypeEndpointSetName + ".Invoke.g.cs", endpointSetInvokeSource);
+    }
 }

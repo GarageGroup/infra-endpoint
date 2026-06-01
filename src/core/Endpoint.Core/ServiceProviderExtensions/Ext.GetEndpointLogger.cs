@@ -6,7 +6,7 @@ namespace GarageGroup.Infra.Endpoint;
 partial class EndpointServiceProviderExtensions
 {
     public static ILogger<TEndpoint>? GetEndpointLogger<TEndpoint>(this IServiceProvider? serviceProvider)
-        where TEndpoint : IEndpoint
+        where TEndpoint : IEndpointInvokeSupplier
     {
         var loggerFactoryValue = serviceProvider?.GetService(typeof(ILoggerFactory));
 

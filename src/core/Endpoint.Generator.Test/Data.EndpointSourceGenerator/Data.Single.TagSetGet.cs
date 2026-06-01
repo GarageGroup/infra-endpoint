@@ -143,22 +143,18 @@ partial class EndpointSourceGeneratorData
                 =>
                 new(
                     endpointFunc: endpointFunc ?? throw new ArgumentNullException(nameof(endpointFunc)),
-                    jsonSerializerOptions: DefaultSerializerOptions,
                     logger: serviceProvider?.GetEndpointLogger<TagSetGetEndpoint>());
 
-            private static readonly JsonSerializerOptions DefaultSerializerOptions = EndpointDeserializer.CreateDeafultOptions();
+            private static readonly JsonSerializerOptions SerializerOptions = EndpointDeserializer.CreateDeafultOptions();
 
             private readonly TagSetGetFunc endpointFunc;
 
-            private readonly JsonSerializerOptions jsonSerializerOptions;
-
             private readonly ILogger? logger;
 
-            private TagSetGetEndpoint(TagSetGetFunc endpointFunc, JsonSerializerOptions jsonSerializerOptions, ILogger? logger)
+            private TagSetGetEndpoint(TagSetGetFunc endpointFunc, ILogger? logger)
             {
                 this.endpointFunc = endpointFunc;
                 this.logger = logger;
-                this.jsonSerializerOptions = jsonSerializerOptions;
             }
         }
         """;
@@ -191,7 +187,7 @@ partial class EndpointSourceGeneratorData
                     var inputFailure = inputResult.FailureOrThrow();
 
                     logger?.LogError(inputFailure.SourceException, "Request is incorrect: {failureMessage}", inputFailure.FailureMessage);
-                    return inputResult.FailureOrThrow().ToBadRequestResponse(jsonSerializerOptions);
+                    return inputResult.FailureOrThrow().ToBadRequestResponse(SerializerOptions);
                 }
 
                 var input = inputResult.SuccessOrThrow();
@@ -245,7 +241,7 @@ partial class EndpointSourceGeneratorData
                     writer.WriteStartObject();
 
                     writer.WritePropertyName("tags");
-                    JsonSerializer.Serialize(writer, success.Tags, jsonSerializerOptions);
+                    JsonSerializer.Serialize(writer, success.Tags, SerializerOptions);
 
                     writer.WriteEndObject();
                     writer.Flush();

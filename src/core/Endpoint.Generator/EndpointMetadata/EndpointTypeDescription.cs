@@ -40,4 +40,6 @@ internal sealed record class EndpointTypeDescription
     public ITypeSymbol? FailureCodeType { get; set; }
 
     public ObsoleteData? ObsoleteData { get; set; }
+
+    public bool IsIncludedInEndpointSet { get; set; }
 }

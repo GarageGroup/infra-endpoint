@@ -220,22 +220,18 @@ partial class EndpointSourceGeneratorData
                 =>
                 new(
                     endpointFunc: endpointFunc ?? throw new ArgumentNullException(nameof(endpointFunc)),
-                    jsonSerializerOptions: DefaultSerializerOptions,
                     logger: serviceProvider?.GetEndpointLogger<PictureSetGetEndpoint>());
 
-            private static readonly JsonSerializerOptions DefaultSerializerOptions = EndpointDeserializer.CreateDeafultOptions();
+            private static readonly JsonSerializerOptions SerializerOptions = EndpointDeserializer.CreateDeafultOptions();
 
             private readonly IPictureSetGetFunc endpointFunc;
 
-            private readonly JsonSerializerOptions jsonSerializerOptions;
-
             private readonly ILogger? logger;
 
-            private PictureSetGetEndpoint(IPictureSetGetFunc endpointFunc, JsonSerializerOptions jsonSerializerOptions, ILogger? logger)
+            private PictureSetGetEndpoint(IPictureSetGetFunc endpointFunc, ILogger? logger)
             {
                 this.endpointFunc = endpointFunc;
                 this.logger = logger;
-                this.jsonSerializerOptions = jsonSerializerOptions;
             }
         }
         """;
@@ -266,7 +262,7 @@ partial class EndpointSourceGeneratorData
                     var inputFailure = inputResult.FailureOrThrow();
 
                     logger?.LogError(inputFailure.SourceException, "Request is incorrect: {failureMessage}", inputFailure.FailureMessage);
-                    return inputResult.FailureOrThrow().ToBadRequestResponse(jsonSerializerOptions);
+                    return inputResult.FailureOrThrow().ToBadRequestResponse(SerializerOptions);
                 }
 
                 var input = inputResult.SuccessOrThrow();
@@ -316,7 +312,7 @@ partial class EndpointSourceGeneratorData
                     {
                         new("Content-Type", "application/json")
                     },
-                    body: success.Pictures.ToJsonStream(jsonSerializerOptions));
+                    body: success.Pictures.ToJsonStream(SerializerOptions));
             }
         }
         """;

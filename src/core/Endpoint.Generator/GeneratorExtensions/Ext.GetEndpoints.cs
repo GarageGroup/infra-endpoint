@@ -11,21 +11,58 @@ using static EndpointAttributeHelper;
 
 partial class SourceGeneratorExtensions
 {
-    internal static IReadOnlyCollection<EndpointTypeDescription> GetEndpointTypes(this Compilation compilation, CancellationToken cancellationToken)
+    internal static IReadOnlyCollection<EndpointTypeDescription> GetEndpointTypes(
+        this Compilation compilation, CancellationToken cancellationToken)
     {
         var endpointAttributeType = compilation.GetTypeByMetadataNameOrThrow(EndpointAttributeName);
+        var endpointSetAttributeType = compilation.GetTypeByMetadataNameOrThrow(EndpointSetAttributeName);
 
         var visitor = new ExportedTypesCollector(cancellationToken);
         visitor.VisitAssembly(compilation.Assembly);
 
-        return visitor.GetNonStaticTypes().Select(InnerGetEndpointType).NotNull().ToArray();
+        var exportedTypes = visitor.GetNonStaticTypes().ToArray();
+        var endpointTypesInSet = exportedTypes.GetEndpointTypesInSet(endpointAttributeType, endpointSetAttributeType);
+
+        return exportedTypes.Select(InnerGetEndpointType).NotNull().ToArray();
 
         EndpointTypeDescription? InnerGetEndpointType(INamedTypeSymbol typeSymbol)
             =>
-            GetEndpointType(typeSymbol, endpointAttributeType);
+            GetEndpointType(typeSymbol, endpointAttributeType, endpointTypesInSet.Contains(typeSymbol, SymbolEqualityComparer.Default));
     }
 
-    private static EndpointTypeDescription? GetEndpointType(INamedTypeSymbol typeSymbol, INamedTypeSymbol endpointAttributeType)
+    private static IReadOnlyCollection<INamedTypeSymbol> GetEndpointTypesInSet(
+        this IEnumerable<INamedTypeSymbol> typeSymbols, INamedTypeSymbol endpointAttributeType, INamedTypeSymbol endpointSetAttributeType)
+    {
+        var endpointTypes = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+        foreach (var typeSymbol in typeSymbols)
+        {
+            if (typeSymbol.GetAttributes().Any(IsEndpointSetAttribute) is false)
+            {
+                continue;
+            }
+
+            foreach (var interfaceType in typeSymbol.AllInterfaces)
+            {
+                if (interfaceType.GetAttributes().Any(IsEndpointAttribute))
+                {
+                    _ = endpointTypes.Add(interfaceType);
+                }
+            }
+        }
+
+        return endpointTypes;
+
+        bool IsEndpointAttribute(AttributeData attributeData)
+            =>
+            attributeData.AttributeClass?.Equals(endpointAttributeType, SymbolEqualityComparer.Default) is true;
+
+        bool IsEndpointSetAttribute(AttributeData attributeData)
+            =>
+            attributeData.AttributeClass?.Equals(endpointSetAttributeType, SymbolEqualityComparer.Default) is true;
+    }
+
+    private static EndpointTypeDescription? GetEndpointType(
+        INamedTypeSymbol typeSymbol, INamedTypeSymbol endpointAttributeType, bool isIncludedInEndpointSet)
     {
         var endpointAttributeData = typeSymbol.GetAttributes().FirstOrDefault(IsEndpointAttribute);
         if (endpointAttributeData is null)
@@ -71,7 +108,8 @@ partial class SourceGeneratorExtensions
             RequestType = endpointMethod.Parameters[0].Type,
             ResponseType = methodRetrunType.IsResultType() ? methodRetrunType?.TypeArguments[0] : methodRetrunType,
             FailureCodeType = failureType?.TypeArguments[0],
-            ObsoleteData = typeSymbol.GetObsoleteData()
+            ObsoleteData = typeSymbol.GetObsoleteData(),
+            IsIncludedInEndpointSet = isIncludedInEndpointSet
         };
 
         bool IsEndpointAttribute(AttributeData attributeData)

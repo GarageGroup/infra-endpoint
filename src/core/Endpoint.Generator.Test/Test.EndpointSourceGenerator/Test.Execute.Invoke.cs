@@ -51,4 +51,19 @@ partial class EndpointSourceGeneratorTest
             =>
             source.HintName.Equals(EndpointSourceGeneratorData.TagSetGetInvokeHintName, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public static void Execute_CustomSerializerOptionsFunc_GeneratesInvokeSource()
+    {
+        var generatedSources = RunGeneratorAndGetSources(EndpointSourceGeneratorData.CustomSerializerOptionsSourceCode);
+        var invokeSource = generatedSources.Single(IsInvokeSource).SourceText.ToString();
+
+        Assert.Equal(
+            NormalizeNewLines(EndpointSourceGeneratorData.CustomSerializerOptionsInvokeSourceCode),
+            NormalizeNewLines(invokeSource));
+
+        static bool IsInvokeSource(GeneratedSourceResult source)
+            =>
+            source.HintName.Equals(EndpointSourceGeneratorData.CustomSerializerOptionsInvokeHintName, StringComparison.Ordinal);
+    }
 }
