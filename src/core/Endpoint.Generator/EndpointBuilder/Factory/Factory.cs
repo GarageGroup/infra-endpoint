@@ -65,6 +65,7 @@ partial class EndpointBuilder
     {
         var method = type.MethodName?.ToUpperInvariant();
         return builder.AppendCodeLines(
+            $"[EndpointMetadata({method.AsStringSourceCodeOr()}, {type.Route.AsStringSourceCodeOr()})]",
             $"[EndpointOperationMetadata({type.OperationId.AsStringSourceCodeOrStringEmpty()}, {method.AsStringSourceCodeOr()}, {type.Route.AsStringSourceCodeOr()})]");
     }
 

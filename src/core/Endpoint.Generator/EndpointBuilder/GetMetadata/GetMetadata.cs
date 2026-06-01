@@ -54,8 +54,12 @@ partial class EndpointBuilder
             "schemas: new Dictionary<string, IOpenApiSchema>()")
         .BeginCodeBlock()
         .AppendSchemasBody(type)
-        .EndCodeBlock(");")
+        .EndCodeBlock(")")
         .EndArguments()
+        .BeginCodeBlock()
+        .AppendCodeLines(
+            $"OperationId = {type.OperationId.AsStringSourceCodeOrStringEmpty()}")
+        .EndCodeBlock(";")
         .EndLambda()
         .EndCodeBlock()
         .Build();

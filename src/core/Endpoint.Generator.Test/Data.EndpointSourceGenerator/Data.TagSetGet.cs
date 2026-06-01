@@ -135,6 +135,7 @@ partial class EndpointSourceGeneratorData
 
         namespace Demo;
 
+        [EndpointMetadata("POST", "/getTags")]
         [EndpointOperationMetadata("TagSetGet", "POST", "/getTags")]
         public sealed partial class TagSetGetEndpoint : IEndpoint
         {
@@ -350,7 +351,10 @@ partial class EndpointSourceGeneratorData
                     },
                     schemas: new Dictionary<string, IOpenApiSchema>()
                     {
-                    });
+                    })
+                {
+                    OperationId = "TagSetGet"
+                };
         }
         """;
 }

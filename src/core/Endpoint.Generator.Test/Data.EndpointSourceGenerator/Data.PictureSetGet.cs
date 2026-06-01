@@ -212,6 +212,7 @@ partial class EndpointSourceGeneratorData
 
         namespace Demo;
 
+        [EndpointMetadata("GET", "/pictures/{entity}/{id}")]
         [EndpointOperationMetadata("PictureSetGet", "GET", "/pictures/{entity}/{id}")]
         public sealed partial class PictureSetGetEndpoint : IEndpoint
         {
@@ -433,7 +434,10 @@ partial class EndpointSourceGeneratorData
                     },
                     schemas: new Dictionary<string, IOpenApiSchema>()
                     {
-                    });
+                    })
+                {
+                    OperationId = "PictureSetGet"
+                };
         }
         """;
 }

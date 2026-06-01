@@ -162,6 +162,7 @@ partial class EndpointSourceGeneratorData
 
         namespace Demo;
 
+        [EndpointMetadata("POST", "/subscribeToNotification")]
         [EndpointOperationMetadata("NotificationSubscribe", "POST", "/subscribeToNotification")]
         public sealed partial class NotificationSubscribeEndpoint : IEndpoint
         {
@@ -392,7 +393,10 @@ partial class EndpointSourceGeneratorData
                     schemas: new Dictionary<string, IOpenApiSchema>()
                     {
                         ["ProblemDetails"] = CreateProblemSchema()
-                    });
+                    })
+                {
+                    OperationId = "NotificationSubscribe"
+                };
         }
         """;
 }
