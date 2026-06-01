@@ -38,6 +38,7 @@ partial class EndpointBuilder
         .AppendDeprecatedTagIfNecessary(
             type)
         .AppendCodeLines(
+            $"OperationId = BuildOperationId({type.OperationId.AsStringSourceCodeOrStringEmpty()}),",
             $"Summary = {type.Summary.AsStringValueOrDefault()},",
             $"Description = {type.Description.AsStringValueOrDefault()},")
         .AppendTags(type)

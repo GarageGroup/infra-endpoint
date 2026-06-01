@@ -343,6 +343,7 @@ partial class EndpointSourceGeneratorData
                     description: default,
                     operation: new()
                     {
+                        OperationId = BuildOperationId("PictureSetGet"),
                         Summary = "Get pictures",
                         Description = "Returns pictures in required format",
                         Tags = new HashSet<OpenApiTagReference>

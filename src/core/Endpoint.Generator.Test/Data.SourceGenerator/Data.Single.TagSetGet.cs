@@ -285,6 +285,7 @@ partial class EndpointSourceGeneratorData
                     description: default,
                     operation: new()
                     {
+                        OperationId = BuildOperationId("TagSetGet"),
                         Summary = "Get tags",
                         Description = "Retrieves a list of tags associated with user's timesheets.",
                         Tags = new HashSet<OpenApiTagReference>
