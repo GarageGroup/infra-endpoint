@@ -2,7 +2,7 @@ using System;
 
 namespace GarageGroup.Infra.Endpoint;
 
-[AttributeUsage(AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public sealed class EndpointOperationMetadataAttribute(string operationId, string method, string route) : Attribute
 {
     public string OperationId { get; } = operationId ?? string.Empty;

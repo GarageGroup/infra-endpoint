@@ -16,10 +16,10 @@ internal sealed class EndpointApplicationSourceGenerator : IIncrementalGenerator
         var constructorSourceCode = rootType.BuildConstructorSourceCode();
         context.AddSource($"{rootType.TypeName}.g.cs", constructorSourceCode);
 
-        foreach (var resolverMethodName in rootType.ResolverMethodNames)
+        foreach (var resolverMethod in rootType.ResolverMethods)
         {
-            var endpointSourceCode = rootType.BuildEndpointSourceCode(resolverMethodName);
-            context.AddSource($"{rootType.TypeName}.{resolverMethodName}.g.cs", endpointSourceCode);
+            var endpointSourceCode = rootType.BuildEndpointSourceCode(resolverMethod);
+            context.AddSource($"{rootType.TypeName}.{resolverMethod.MethodName}.g.cs", endpointSourceCode);
         }
     }
 }

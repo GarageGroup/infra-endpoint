@@ -23,8 +23,8 @@ partial class SourceGeneratorExtensions
             return null;
         }
 
-        var resolverMethodNames = typeSymbol.GetMembers().OfType<IMethodSymbol>().Select(GetResolverMethodName).NotEmpty().ToArray();
-        if (resolverMethodNames.Any() is false)
+        var resolverMethods = typeSymbol.GetMembers().OfType<IMethodSymbol>().Select(GetResolverMethod).NotNull().ToArray();
+        if (resolverMethods.Any() is false)
         {
             return null;
         }
@@ -33,16 +33,27 @@ partial class SourceGeneratorExtensions
             @namespace: typeSymbol.ContainingNamespace.ToString(),
             typeName: typeSymbol.Name + "EndpointExtensions",
             providerType: typeSymbol.GetDisplayedData(),
-            resolverMethodNames: resolverMethodNames);
+            resolverMethods: resolverMethods);
     }
 
-    private static string? GetResolverMethodName(IMethodSymbol methodSymbol)
+    private static ResolverMethodMetadata? GetResolverMethod(IMethodSymbol methodSymbol)
     {
-        var extensionAttribute = methodSymbol.GetAttributes().FirstOrDefault(IsEndpointApplicationExtensionAttribute);
-        if (extensionAttribute is null)
+        var attributes = methodSymbol.GetAttributes().ToArray();
+        var hasEndpointAttribute = attributes.Any(IsEndpointApplicationExtensionAttribute);
+        var hasEndpointSetAttribute = attributes.Any(IsEndpointSetApplicationExtensionAttribute);
+
+        if (hasEndpointAttribute is false && hasEndpointSetAttribute is false)
         {
             return null;
         }
+
+        if (hasEndpointAttribute && hasEndpointSetAttribute)
+        {
+            throw methodSymbol.CreateInvalidMethodException(
+                $"must have only one of {DefaultNamespace}.EndpointApplicationExtensionAttribute or {DefaultNamespace}.EndpointSetApplicationExtensionAttribute");
+        }
+
+        var isEndpointSet = hasEndpointSetAttribute;
 
         if (methodSymbol.IsStatic is false)
         {
@@ -67,18 +78,27 @@ partial class SourceGeneratorExtensions
         var endpointType = GetResolvedHandlerType(methodSymbol.ReturnType, methodSymbol);
         if (endpointType.AllInterfaces.Any(IsEndpointType) is not true)
         {
-            throw methodSymbol.CreateInvalidMethodException($"must resolve a type that implements {EndpointNamespace}.IEndpoint");
+            var interfaceName = isEndpointSet ? "IEndpointSet" : "IEndpoint";
+            throw methodSymbol.CreateInvalidMethodException($"must resolve a type that implements {EndpointNamespace}.{interfaceName}");
         }
 
-        return methodSymbol.Name;
+        return new(
+            methodName: methodSymbol.Name,
+            isEndpointSet: isEndpointSet);
 
         static bool IsEndpointApplicationExtensionAttribute(AttributeData attributeData)
             =>
             attributeData.AttributeClass?.IsType(DefaultNamespace, "EndpointApplicationExtensionAttribute") is true;
 
-        static bool IsEndpointType(INamedTypeSymbol typeSymbol)
+        static bool IsEndpointSetApplicationExtensionAttribute(AttributeData attributeData)
             =>
-            typeSymbol.IsType(EndpointNamespace, "IEndpoint");
+            attributeData.AttributeClass?.IsType(DefaultNamespace, "EndpointSetApplicationExtensionAttribute") is true;
+
+        bool IsEndpointType(INamedTypeSymbol typeSymbol)
+            =>
+            isEndpointSet
+                ? typeSymbol.IsType(EndpointNamespace, "IEndpointSet")
+                : typeSymbol.IsType(EndpointNamespace, "IEndpoint");
     }
 
     private static INamedTypeSymbol GetResolvedHandlerType(ITypeSymbol dependencyType, IMethodSymbol methodSymbol)
@@ -169,6 +189,19 @@ partial class SourceGeneratorExtensions
             }
 
             return methodSymbol.ReturnsVoid is false;
+        }
+    }
+
+    private static IEnumerable<ResolverMethodMetadata> NotNull(this IEnumerable<ResolverMethodMetadata?> source)
+    {
+        foreach (var item in source)
+        {
+            if (item is null)
+            {
+                continue;
+            }
+
+            yield return item;
         }
     }
 }

@@ -153,6 +153,79 @@ partial class EndpointApplicationSourceGeneratorTest
     }
 
     [Fact]
+    public static void Execute_ValidEndpointSetApplicationExtension_GeneratesUseEndpointSetSource()
+    {
+        const string sourceCode =
+            """
+            using System;
+            using System.Collections.Generic;
+            using System.Threading;
+            using System.Threading.Tasks;
+            using GarageGroup.Infra;
+            using GarageGroup.Infra.Endpoint;
+            using PrimeFuncPack;
+
+            namespace Demo.AspNetCore
+            {
+                public sealed class PictureEndpointSet : IEndpointSet
+                {
+                    public static IReadOnlyCollection<EndpointMetadata> Metadata
+                        =>
+                        Array.Empty<EndpointMetadata>();
+
+                    public Task<EndpointResponse> InvokeAsync(EndpointRequest request, CancellationToken cancellationToken = default)
+                        =>
+                        default!;
+                }
+
+                public static class EndpointProvider
+                {
+                    [EndpointSetApplicationExtension]
+                    public static Dependency<PictureEndpointSet> UsePictureEndpointSet()
+                        =>
+                        default!;
+                }
+            }
+
+            namespace PrimeFuncPack
+            {
+                public sealed class Dependency<T>
+                {
+                    public T Resolve(IServiceProvider serviceProvider)
+                        =>
+                        default!;
+                }
+            }
+            """;
+
+        var generatedSources = RunGeneratorAndGetSources(sourceCode, 2);
+        var endpoint = generatedSources.Single(IsEndpoint).SourceText.ToString();
+
+        Assert.Equal(
+            NormalizeNewLines(
+                """
+                // Auto-generated code by PrimeFuncPack
+                #nullable enable
+
+                using Microsoft.AspNetCore.Builder;
+
+                namespace Demo.AspNetCore;
+
+                partial class EndpointProviderEndpointExtensions
+                {
+                    internal static TBuilder UsePictureEndpointSet<TBuilder>(this TBuilder builder) where TBuilder : IApplicationBuilder
+                        =>
+                        builder.UseEndpointSet(EndpointProvider.UsePictureEndpointSet().Resolve);
+                }
+                """),
+            NormalizeNewLines(endpoint));
+
+        static bool IsEndpoint(GeneratedSourceResult source)
+            =>
+            source.HintName.Equals("EndpointProviderEndpointExtensions.UsePictureEndpointSet.g.cs", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public static void Execute_MultipleValidEndpointApplicationExtensions_GeneratesOneConstructorAndEndpointSources()
     {
         const string sourceCode =
@@ -410,6 +483,58 @@ partial class EndpointApplicationSourceGeneratorTest
 
         Assert.Contains("InvalidProvider.UseInvalidEndpoint", exception.Message, StringComparison.Ordinal);
         Assert.Contains("must resolve a type that implements GarageGroup.Infra.Endpoint.IEndpoint", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public static void Execute_EndpointSetResolverReturnsDependencyWithNonEndpointSet_ThrowsInvalidOperationException()
+    {
+        const string sourceCode =
+            """
+            using System;
+            using System.Threading;
+            using System.Threading.Tasks;
+            using GarageGroup.Infra;
+            using GarageGroup.Infra.Endpoint;
+            using PrimeFuncPack;
+
+            namespace Demo.Invalid
+            {
+                public sealed class NotEndpointSet : IEndpoint
+                {
+                    public static EndpointMetadata GetEndpointMetadata()
+                        =>
+                        default!;
+
+                    public Task<EndpointResponse> InvokeAsync(EndpointRequest request, CancellationToken cancellationToken = default)
+                        =>
+                        default!;
+                }
+
+                public static class InvalidProvider
+                {
+                    [EndpointSetApplicationExtension]
+                    public static Dependency<NotEndpointSet> UseInvalidEndpointSet()
+                        =>
+                        default!;
+                }
+            }
+
+            namespace PrimeFuncPack
+            {
+                public sealed class Dependency<T>
+                {
+                    public T Resolve(IServiceProvider serviceProvider)
+                        =>
+                        default!;
+                }
+            }
+            """;
+
+        var result = RunGenerator(sourceCode);
+        var exception = Assert.IsType<InvalidOperationException>(result.Results.Single().Exception);
+
+        Assert.Contains("InvalidProvider.UseInvalidEndpointSet", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("must resolve a type that implements GarageGroup.Infra.Endpoint.IEndpointSet", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]

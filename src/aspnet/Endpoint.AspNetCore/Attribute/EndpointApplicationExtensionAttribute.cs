@@ -3,6 +3,4 @@
 namespace GarageGroup.Infra;
 
 [AttributeUsage(AttributeTargets.Method)]
-public sealed class EndpointApplicationExtensionAttribute : Attribute
-{
-}
+public sealed class EndpointApplicationExtensionAttribute : Attribute;
