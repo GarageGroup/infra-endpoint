@@ -334,6 +334,7 @@ partial class EndpointSourceGeneratorData
                     description: default,
                     operation: new()
                     {
+                        OperationId = BuildOperationId("NotificationSubscribe"),
                         Summary = "Subscribe bot user to notification",
                         Description = "Allows a bot user to subscribe to specific notifications",
                         Tags = new HashSet<OpenApiTagReference>
