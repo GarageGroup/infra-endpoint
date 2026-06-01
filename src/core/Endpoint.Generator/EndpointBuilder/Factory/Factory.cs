@@ -64,7 +64,8 @@ partial class EndpointBuilder
     private static SourceBuilder AppendEndpointMetadataAttribute(this SourceBuilder builder, EndpointTypeDescription type)
     {
         var method = type.MethodName?.ToUpperInvariant();
-        return builder.AppendCodeLines($"[EndpointMetadata({method.AsStringSourceCodeOr()}, {type.Route.AsStringSourceCodeOr()})]");
+        return builder.AppendCodeLines(
+            $"[EndpointOperationMetadata({type.OperationId.AsStringSourceCodeOrStringEmpty()}, {method.AsStringSourceCodeOr()}, {type.Route.AsStringSourceCodeOr()})]");
     }
 
     private static string GetNullValidationValue(string argumentName, bool isStructType)

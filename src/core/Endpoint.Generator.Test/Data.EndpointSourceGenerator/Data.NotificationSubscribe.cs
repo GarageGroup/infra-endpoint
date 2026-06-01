@@ -14,7 +14,7 @@ partial class EndpointSourceGeneratorData
         {
             using static NotificationSubscribeMetadata;
 
-            [Endpoint(EndpointMethod.Post, Func.RouteSubscribe, Summary = Func.SummarySubscribe, Description = Func.DescriptionSubscribe)]
+            [Endpoint(Func.OperationIdSubscribe, EndpointMethod.Post, Func.RouteSubscribe, Summary = Func.SummarySubscribe, Description = Func.DescriptionSubscribe)]
             [EndpointTag(Func.Tag)]
             [EndpointTag("Audit", Description = "Audit events")]
             public interface INotificationSubscribeFunc
@@ -71,6 +71,8 @@ partial class EndpointSourceGeneratorData
             {
                 internal static class Func
                 {
+                    public const string OperationIdSubscribe = "NotificationSubscribe";
+
                     public const string Tag = "Notification";
 
                     public const string RouteSubscribe = "/subscribeToNotification";
@@ -160,7 +162,7 @@ partial class EndpointSourceGeneratorData
 
         namespace Demo;
 
-        [EndpointMetadata("POST", "/subscribeToNotification")]
+        [EndpointOperationMetadata("NotificationSubscribe", "POST", "/subscribeToNotification")]
         public sealed partial class NotificationSubscribeEndpoint : IEndpoint
         {
             public static NotificationSubscribeEndpoint Resolve(IServiceProvider? serviceProvider, INotificationSubscribeFunc endpointFunc)

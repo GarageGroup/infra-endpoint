@@ -62,8 +62,9 @@ partial class SourceGeneratorExtensions
             IsTypeFuncStruct = typeSymbol.IsReferenceType is false,
             MethodFuncName = endpointMethod.Name,
             SerializerOptionsPropertyFuncName = typeSymbol.GetSerializerOptionsPropertyFuncName(),
-            MethodName = GetMethodName(endpointAttributeData.ConstructorArguments[0].Value),
-            Route = endpointAttributeData.ConstructorArguments[1].Value?.ToString(),
+            MethodName = GetMethodName(endpointAttributeData.GetEndpointMethodValue()),
+            Route = endpointAttributeData.GetEndpointRouteValue(),
+            OperationId = endpointAttributeData.GetEndpointOperationId(typeSymbol),
             Summary = endpointAttributeData.GetAttributePropertyValue("Summary")?.ToString(),
             Description = endpointAttributeData.GetAttributePropertyValue("Description")?.ToString(),
             Tags = tags,
@@ -77,6 +78,37 @@ partial class SourceGeneratorExtensions
             =>
             attributeData.AttributeClass?.Equals(endpointAttributeType, SymbolEqualityComparer.Default) is true;
     }
+
+    private static string GetEndpointOperationId(this AttributeData attributeData, INamedTypeSymbol typeSymbol)
+    {
+        if (attributeData.ConstructorArguments.Length < 3)
+        {
+            throw new InvalidOperationException(
+                $"Endpoint operationId for type {typeSymbol.Name} must be specified and cannot be null or whitespace. " +
+                "Use EndpointAttribute(string operationId, EndpointMethod method, string route).");
+        }
+
+        var operationId = attributeData.ConstructorArguments[0].Value?.ToString();
+        if (string.IsNullOrWhiteSpace(operationId))
+        {
+            throw new InvalidOperationException(
+                $"Endpoint operationId for type {typeSymbol.Name} must be specified and cannot be null or whitespace.");
+        }
+
+        return operationId!;
+    }
+
+    private static object? GetEndpointMethodValue(this AttributeData attributeData)
+        =>
+        attributeData.ConstructorArguments.Length >= 3
+            ? attributeData.ConstructorArguments[1].Value
+            : attributeData.ConstructorArguments[0].Value;
+
+    private static string? GetEndpointRouteValue(this AttributeData attributeData)
+        =>
+        attributeData.ConstructorArguments.Length >= 3
+            ? attributeData.ConstructorArguments[2].Value?.ToString()
+            : attributeData.ConstructorArguments[1].Value?.ToString();
 
     private static IEnumerable<EndpointTag> GetEndpointTags(this INamedTypeSymbol typeSymbol)
     {

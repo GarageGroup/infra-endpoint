@@ -14,7 +14,7 @@ partial class EndpointSourceGeneratorData
         {
             using static PictureSetGetMetadata;
 
-            [Endpoint(EndpointMethod.Get, Func.Route, Summary = Func.Summary, Description = Func.Description)]
+            [Endpoint(Func.OperationId, EndpointMethod.Get, Func.Route, Summary = Func.Summary, Description = Func.Description)]
             [EndpointTag(Func.TagName, Description = Func.TagDescription)]
             public interface IPictureSetGetFunc
             {
@@ -107,6 +107,8 @@ partial class EndpointSourceGeneratorData
             {
                 internal static class Func
                 {
+                    public const string OperationId = "PictureSetGet";
+
                     public const string Route = "/pictures/{entity}/{id}";
 
                     public const string Summary = "Get pictures";
@@ -210,7 +212,7 @@ partial class EndpointSourceGeneratorData
 
         namespace Demo;
 
-        [EndpointMetadata("GET", "/pictures/{entity}/{id}")]
+        [EndpointOperationMetadata("PictureSetGet", "GET", "/pictures/{entity}/{id}")]
         public sealed partial class PictureSetGetEndpoint : IEndpoint
         {
             public static PictureSetGetEndpoint Resolve(IServiceProvider? serviceProvider, IPictureSetGetFunc endpointFunc)

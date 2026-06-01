@@ -15,7 +15,7 @@ partial class EndpointSourceGeneratorData
         {
             using static TagSetGetMetadata;
 
-            [Endpoint(EndpointMethod.Post, Func.Route, Summary = Func.Summary, Description = Func.Description)]
+            [Endpoint(Func.OperationId, EndpointMethod.Post, Func.Route, Summary = Func.Summary, Description = Func.Description)]
             public sealed class TagSetGetFunc
             {
                 public Task<Result<TagSetGetOut, Failure<Unit>>> InvokeAsync(
@@ -51,6 +51,8 @@ partial class EndpointSourceGeneratorData
             {
                 internal static class Func
                 {
+                    public const string OperationId = "TagSetGet";
+
                     public const string Tag = "Tag";
 
                     public const string Route = "/getTags";
@@ -133,7 +135,7 @@ partial class EndpointSourceGeneratorData
 
         namespace Demo;
 
-        [EndpointMetadata("POST", "/getTags")]
+        [EndpointOperationMetadata("TagSetGet", "POST", "/getTags")]
         public sealed partial class TagSetGetEndpoint : IEndpoint
         {
             public static TagSetGetEndpoint Resolve(IServiceProvider? serviceProvider, TagSetGetFunc endpointFunc)

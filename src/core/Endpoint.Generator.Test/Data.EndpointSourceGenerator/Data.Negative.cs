@@ -11,7 +11,7 @@ partial class EndpointSourceGeneratorData
 
         namespace Demo
         {
-            [Endpoint(EndpointMethod.Get, "/generic")]
+            [Endpoint("generic", EndpointMethod.Get, "/generic")]
             public interface IGenericFunc<TInput>
             {
                 ValueTask<GenericOut> InvokeAsync(GenericIn input, CancellationToken cancellationToken);
@@ -31,7 +31,7 @@ partial class EndpointSourceGeneratorData
 
         namespace Demo
         {
-            [Endpoint(EndpointMethod.Get, "/invalid")]
+            [Endpoint("invalid", EndpointMethod.Get, "/invalid")]
             public interface IInvalidFunc
             {
                 ValueTask<InvalidOut> InvokeAsync(InvalidIn input);
@@ -40,6 +40,27 @@ partial class EndpointSourceGeneratorData
             public sealed record class InvalidIn;
 
             public sealed record class InvalidOut;
+        }
+        """;
+
+    internal const string EndpointWithWhiteSpaceNameSourceCode
+        =
+        """
+        using System.Threading;
+        using System.Threading.Tasks;
+        using GarageGroup.Infra;
+
+        namespace Demo
+        {
+            [Endpoint("   ", EndpointMethod.Get, "/invalid-name")]
+            public interface IInvalidNameFunc
+            {
+                ValueTask<InvalidNameOut> InvokeAsync(InvalidNameIn input, CancellationToken cancellationToken);
+            }
+
+            public sealed record class InvalidNameIn;
+
+            public sealed record class InvalidNameOut;
         }
         """;
 }
