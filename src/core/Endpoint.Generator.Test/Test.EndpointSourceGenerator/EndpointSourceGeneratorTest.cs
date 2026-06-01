@@ -16,7 +16,8 @@ public static partial class EndpointSourceGeneratorTest
         [
             ..
             ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).OrEmpty().Split(Path.PathSeparator).Select(CreateFromFile),
-            CreateFromType<EndpointAttribute>()
+            CreateFromType<EndpointAttribute>(),
+            CreateFromType<EndpointRequest>()
         ];
 
     private static GeneratedSourceResult[] RunGeneratorAndGetSources(string sourceCode)
