@@ -243,6 +243,10 @@ partial class EndpointBuilder
             {
                 sourceBuilder.AppendBodyPropertiesContent(responseBodyProperties);
             }
+            else if (type.HasImplicitResponseBody())
+            {
+                sourceBuilder.AppendContent(type.ResponseType, "application/json");
+            }
 
             sourceBuilder.EndCodeBlock(",");
         }
@@ -344,6 +348,28 @@ partial class EndpointBuilder
                 bodyType.BodyType)
             .AppendCodeLines(
                 $".CreateContent({bodyType.ContentType.Name.AsStringSourceCodeOrStringEmpty()})");
+    }
+
+    private static SourceBuilder AppendContent(this SourceBuilder sourceBuilder, ITypeSymbol bodyType, string contentType)
+    {
+        var usings = new List<string>();
+
+        var requestBodySchema = bodyType.GetSimpleSchemaFunction(usings, null, null);
+        sourceBuilder = sourceBuilder.AddUsing(usings.ToArray());
+
+        if (string.IsNullOrEmpty(requestBodySchema) is false)
+        {
+            return sourceBuilder.AppendCodeLines(
+                $"Content = {requestBodySchema}.CreateContent({contentType.AsStringSourceCodeOrStringEmpty()})");
+        }
+
+        return sourceBuilder
+            .AppendSchema(
+                "Content", bodyType, 0, null, null, default)
+            .AppendRootXmlSchemaIfNecessary(
+                bodyType)
+            .AppendCodeLines(
+                $".CreateContent({contentType.AsStringSourceCodeOrStringEmpty()})");
     }
 
     private static SourceBuilder AppendBodyPropertiesContent(

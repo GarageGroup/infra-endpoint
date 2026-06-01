@@ -51,4 +51,71 @@ partial class EndpointSourceGeneratorTest
             =>
             source.HintName.Equals(EndpointSourceGeneratorData.TagSetGetMetadataHintName, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public static void Execute_EndpointWithStringResponse_GeneratesMetadataSourceWithSuccessBody()
+    {
+        const string sourceCode =
+            """
+            using System.Threading;
+            using System.Threading.Tasks;
+            using GarageGroup.Infra;
+
+            namespace Demo
+            {
+                [Endpoint("StringGet", EndpointMethod.Get, "/string")]
+                public interface IStringGetFunc
+                {
+                    ValueTask<string> InvokeAsync(Unit input, CancellationToken cancellationToken);
+                }
+
+                public readonly record struct Unit;
+            }
+            """;
+
+        var generatedSources = RunGeneratorAndGetSources(sourceCode);
+        var metadataSource = generatedSources.Single(IsMetadataSource).SourceText.ToString();
+
+        Assert.Contains("[\"200\"] = new OpenApiResponse()", metadataSource, StringComparison.Ordinal);
+        Assert.Contains("CreateStringSchema", metadataSource, StringComparison.Ordinal);
+        Assert.Contains("CreateContent(\"application/json\")", metadataSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("[\"204\"] = new OpenApiResponse()", metadataSource, StringComparison.Ordinal);
+
+        static bool IsMetadataSource(GeneratedSourceResult source)
+            =>
+            source.HintName.EndsWith(".Metadata.g.cs", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public static void Execute_EndpointWithObjectResponse_GeneratesMetadataSourceWithSuccessBody()
+    {
+        const string sourceCode =
+            """
+            using System.Threading;
+            using System.Threading.Tasks;
+            using GarageGroup.Infra;
+
+            namespace Demo
+            {
+                [Endpoint("ObjectGet", EndpointMethod.Get, "/object")]
+                public interface IObjectGetFunc
+                {
+                    ValueTask<object> InvokeAsync(Unit input, CancellationToken cancellationToken);
+                }
+
+                public readonly record struct Unit;
+            }
+            """;
+
+        var generatedSources = RunGeneratorAndGetSources(sourceCode);
+        var metadataSource = generatedSources.Single(IsMetadataSource).SourceText.ToString();
+
+        Assert.Contains("[\"200\"] = new OpenApiResponse()", metadataSource, StringComparison.Ordinal);
+        Assert.Contains(".CreateContent(\"application/json\")", metadataSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("[\"204\"] = new OpenApiResponse()", metadataSource, StringComparison.Ordinal);
+
+        static bool IsMetadataSource(GeneratedSourceResult source)
+            =>
+            source.HintName.EndsWith(".Metadata.g.cs", StringComparison.Ordinal);
+    }
 }

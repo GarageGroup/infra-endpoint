@@ -51,7 +51,27 @@ internal static partial class EndpointBuilder
 
     private static string GetDefaultStatusCode(this EndpointTypeDescription type)
         =>
-        type.HasResponseBody() ? DefaultSuccessStatusCodeValue : NoContentStatusCodeValue;
+        type.IsNoContentResponse() ? NoContentStatusCodeValue : DefaultSuccessStatusCodeValue;
+
+    private static bool IsNoContentResponse(this EndpointTypeDescription type)
+    {
+        if (type.HasResponseBody())
+        {
+            return false;
+        }
+
+        return type.ResponseType?.IsValueType is true;
+    }
+
+    private static bool HasImplicitResponseBody(this EndpointTypeDescription type)
+    {
+        if (type.HasResponseBody())
+        {
+            return false;
+        }
+
+        return type.ResponseType?.IsValueType is false;
+    }
 
     private static IMethodSymbol? GetConstructor(this ITypeSymbol typeSymbol)
     {

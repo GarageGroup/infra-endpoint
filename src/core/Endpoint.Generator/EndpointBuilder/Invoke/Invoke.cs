@@ -352,6 +352,10 @@ partial class EndpointBuilder
         {
             headers.Add(new("\"Content-Type\"", "\"application/json; charset=utf-8\""));
         }
+        else if (type.HasImplicitResponseBody())
+        {
+            headers.Add(new("\"Content-Type\"", "\"application/json\""));
+        }
 
         if (headers.Count is not > 0)
         {
@@ -396,7 +400,9 @@ partial class EndpointBuilder
 
         if (responseBodyProperties.Count is not > 0)
         {
-            return sourceBuilder.AppendCodeLines("body: default);").EndArguments();
+            return type.HasImplicitResponseBody()
+                ? sourceBuilder.AppendCodeLines("body: success.ToJsonStream(SerializerOptions));").EndArguments()
+                : sourceBuilder.AppendCodeLines("body: default);").EndArguments();
         }
 
         const string localFunctionName = "InnerGetBody";
