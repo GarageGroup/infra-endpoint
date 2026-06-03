@@ -35,7 +35,7 @@ partial class EndpointApplicationBuilder
 
         if (app is ISwaggerBuilder swaggerBuilder)
         {
-            _ = swaggerBuilder.Use(TEndpoint.GetEndpointMetadata().Configure);
+            _ = swaggerBuilder.Use(metadata.Configure);
         }
 
         return app;
