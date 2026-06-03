@@ -378,18 +378,41 @@ partial class EndpointSourceGeneratorData
                             ["400"] = new OpenApiResponse()
                             {
                                 Description = "BadRequest",
-                                Content = CreateProblemContent()
+                                Content = CreateProblemContent(
+                                    new KeyValuePair<string, System.Text.Json.Nodes.JsonNode>("InvalidQuery", CreateProblemExample(
+                                        type: "BadRequest",
+                                        title: "about:blank",
+                                        status: 400,
+                                        detail: "A custom failure message.")
+                                    ),
+                                    new KeyValuePair<string, System.Text.Json.Nodes.JsonNode>("NotificationTypeInvalid", CreateProblemExample(
+                                        type: "BadRequest",
+                                        title: "about:blank",
+                                        status: 400,
+                                        detail: "Notification type is unknown")
+                                    ))
                             },
                             ["404"] = new OpenApiResponse()
                             {
                                 Description = "NotFound",
-                                Content = CreateProblemContent()
+                                Content = CreateProblemContent(
+                                    new KeyValuePair<string, System.Text.Json.Nodes.JsonNode>("NotificationTypeNotFound", CreateProblemExample(
+                                        type: "NotFound",
+                                        title: "about:blank",
+                                        status: 404,
+                                        detail: "Notification type was not found")
+                                    ),
+                                    new KeyValuePair<string, System.Text.Json.Nodes.JsonNode>("BotUserNotFound", CreateProblemExample(
+                                        type: "NotFound",
+                                        title: "about:blank",
+                                        status: 404,
+                                        detail: "Bot user was not found")
+                                    ))
                             }
                         }
                     },
                     schemas: new Dictionary<string, IOpenApiSchema>()
                     {
-                        ["ProblemDetails"] = CreateProblemSchema()
                     })
                 {
                     OperationId = "NotificationSubscribe"
