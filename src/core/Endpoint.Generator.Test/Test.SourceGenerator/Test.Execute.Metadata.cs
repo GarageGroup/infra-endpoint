@@ -118,4 +118,60 @@ partial class EndpointSourceGeneratorTest
             =>
             source.HintName.EndsWith(".Metadata.g.cs", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public static void Execute_ProblemWithDetailFromFailureMessage_GeneratesMetadataSourceWithFailureMessageExample()
+    {
+        const string sourceCode =
+            """
+            using System;
+            using System.Threading;
+            using System.Threading.Tasks;
+            using GarageGroup.Infra;
+
+            namespace Demo
+            {
+                [Endpoint("FailureMessageGet", EndpointMethod.Get, "/failure-message")]
+                public interface IFailureMessageGetFunc
+                {
+                    ValueTask<Result<Unit, Failure<FailureCode>>> InvokeAsync(Unit input, CancellationToken cancellationToken);
+                }
+
+                public enum FailureCode
+                {
+                    Unknown,
+
+                    [Problem(FailureStatusCode.BadRequest, true)]
+                    InvalidQuery
+                }
+
+            }
+
+            namespace System
+            {
+                public readonly record struct Unit;
+
+                public readonly record struct Result<TSuccess, TFailure>(TSuccess Success, TFailure Failure);
+
+                public readonly record struct Failure<TFailureCode>(TFailureCode FailureCode, Exception? SourceException, string FailureMessage);
+            }
+            """;
+
+        var generatedSources = RunGeneratorAndGetSources(sourceCode);
+        var metadataSource = generatedSources.Single(IsMetadataSource).SourceText.ToString();
+
+        AssertGeneratedSourcesCompile(sourceCode, metadataSource);
+        Assert.Contains(
+            "new KeyValuePair<string, System.Text.Json.Nodes.JsonNode>(\"InvalidQuery\", CreateProblemExample(",
+            metadataSource,
+            StringComparison.Ordinal);
+        Assert.Contains("type: \"BadRequest\",", metadataSource, StringComparison.Ordinal);
+        Assert.Contains("title: \"about:blank\",", metadataSource, StringComparison.Ordinal);
+        Assert.Contains("status: 400,", metadataSource, StringComparison.Ordinal);
+        Assert.Contains("detail: \"A custom failure message.\")", metadataSource, StringComparison.Ordinal);
+
+        static bool IsMetadataSource(GeneratedSourceResult source)
+            =>
+            source.HintName.EndsWith(".Metadata.g.cs", StringComparison.Ordinal);
+    }
 }

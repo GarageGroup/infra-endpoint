@@ -266,42 +266,30 @@ partial class EndpointBuilder
             return sourceBuilder;
         }
 
-        var problemData = type.FailureCodeType.GetProblemData().OrderBy(GetStatusCode).ToArray();
-        if (problemData.Length is not > 0)
+        var problemGroups = type.FailureCodeType.GetProblemData().OrderBy(GetStatusCode).GroupBy(GetStatusCode).ToArray();
+        if (problemGroups.Length is not > 0)
         {
             return sourceBuilder;
         }
 
-        var problemDataDictionary = new Dictionary<string, ProblemData>();
-        foreach (var problem in problemData)
+        for (var i = 0; i < problemGroups.Length; i++)
         {
-            var problemCode = problem.StatusCode ?? string.Empty;
-            if (problemDataDictionary.ContainsKey(problemCode))
-            {
-                continue;
-            }
+            var problemGroup = problemGroups[i];
+            var afterSymbol = i < problemGroups.Length - 1 ? "," : null;
 
-            problemDataDictionary[problemCode] = problem;
-        }
-
-        var problems = problemDataDictionary.Select(GetValue).ToArray();
-        for (var i = 0; i < problems.Length; i++)
-        {
-            var problem = problems[i];
-            var afterSymbol = i < problems.Length - 1 ? "," : null;
-
-            var failureCode = problem.StatusCode;
-            var descriptionValue = string.IsNullOrEmpty(problem.Description) switch
+            var failureCode = problemGroup.Key;
+            var firstProblem = problemGroup.First();
+            var descriptionValue = string.IsNullOrEmpty(firstProblem.Description) switch
             {
                 true => GetStatusDescription(failureCode).AsStringValueOrDefault(),
-                _ => problem.Description.AsStringValueOrDefault()
+                _ => firstProblem.Description.AsStringValueOrDefault()
             };
 
             sourceBuilder
                 .AppendCodeLines($"[{failureCode.AsStringSourceCodeOrStringEmpty()}] = new OpenApiResponse()")
                 .BeginCodeBlock()
                 .AppendCodeLines($"Description = {descriptionValue},")
-                .AppendCodeLines("Content = CreateProblemContent()")
+                .AppendProblemContent(problemGroup.ToArray())
                 .EndCodeBlock(afterSymbol);
         }
 
@@ -310,20 +298,55 @@ partial class EndpointBuilder
         static string? GetStatusCode(ProblemData problem)
             =>
             problem.StatusCode;
+    }
 
-        static ProblemData GetValue(KeyValuePair<string, ProblemData> kv)
-            =>
-            kv.Value;
+    private static SourceBuilder AppendProblemContent(this SourceBuilder sourceBuilder, IReadOnlyCollection<ProblemData> problems)
+    {
+        if (problems.Count is 0)
+        {
+            return sourceBuilder.AppendCodeLines("Content = CreateProblemContent()");
+        }
+
+        sourceBuilder
+            .AppendCodeLines("Content = CreateProblemContent(")
+            .BeginArguments();
+
+        var problemArray = problems.ToArray();
+        for (var i = 0; i < problemArray.Length; i++)
+        {
+            var problem = problemArray[i];
+            var afterSymbol = i < problemArray.Length - 1 ? "," : ")";
+
+            sourceBuilder
+                .AppendCodeLines(
+                    $"new KeyValuePair<string, System.Text.Json.Nodes.JsonNode>({problem.StatusFieldName.AsStringSourceCodeOrStringEmpty()}, " +
+                    "CreateProblemExample(")
+                .BeginArguments()
+                .AppendCodeLines(
+                    $"type: {GetStatusDescription(problem.StatusCode).AsStringValueOrDefault()},",
+                    $"title: {problem.Title.AsStringValueOrDefault()},",
+                    $"status: {problem.StatusCode},",
+                    $"detail: {GetProblemDetailExample(problem)})")
+                .EndArguments()
+                .AppendCodeLines($"){afterSymbol}");
+        }
+
+        return sourceBuilder.EndArguments();
+
+        static string GetProblemDetailExample(ProblemData problem)
+        {
+            if (problem.DetailFromFailureMessage)
+            {
+                return FailureMessageDetailExample.AsStringValueOrDefault();
+            }
+
+            return problem.Detail.AsStringValueOrDefault();
+        }
     }
 
     private static SourceBuilder AppendSchemasBody(this SourceBuilder sourceBuilder, EndpointTypeDescription type)
     {
-        if (type.FailureCodeType?.GetProblemData().Any() is not true)
-        {
-            return sourceBuilder;
-        }
-
-        return sourceBuilder.AppendCodeLines("[\"ProblemDetails\"] = CreateProblemSchema()");
+        return sourceBuilder;
     }
 
     private static SourceBuilder AppendContent(this SourceBuilder sourceBuilder, BodyTypeDescription bodyType)

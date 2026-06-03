@@ -40,10 +40,14 @@ public static partial class EndpointSourceGeneratorTest
         Assert.Empty(compilationDiagnostics);
 
         return RunGenerator(compilation);
+    }
 
-        static bool IsError(Diagnostic diagnostic)
-            =>
-            diagnostic.Severity is DiagnosticSeverity.Error;
+    private static void AssertGeneratedSourcesCompile(string sourceCode, params string[] generatedSourceCodes)
+    {
+        var compilation = CreateCompilation(sourceCode).AddSyntaxTrees(generatedSourceCodes.Select(CreateSyntaxTree));
+        var compilationDiagnostics = compilation.GetDiagnostics().Where(IsError).ToArray();
+
+        Assert.Empty(compilationDiagnostics);
     }
 
     private static MetadataReference CreateFromFile(string path)
@@ -58,13 +62,18 @@ public static partial class EndpointSourceGeneratorTest
     {
         return CSharpCompilation.Create(
             assemblyName: "Endpoint.Generator.DynamicTests",
-            syntaxTrees:
-            [
-                CSharpSyntaxTree.ParseText(sourceCode, CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Latest))
-            ],
+            syntaxTrees: [CreateSyntaxTree(sourceCode)],
             references: MetadataReferences,
             options: new(OutputKind.DynamicallyLinkedLibrary));
     }
+
+    private static SyntaxTree CreateSyntaxTree(string sourceCode)
+        =>
+        CSharpSyntaxTree.ParseText(sourceCode, CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Latest));
+
+    private static bool IsError(Diagnostic diagnostic)
+        =>
+        diagnostic.Severity is DiagnosticSeverity.Error;
 
     private static GeneratorDriverRunResult RunGenerator(CSharpCompilation compilation)
     {
